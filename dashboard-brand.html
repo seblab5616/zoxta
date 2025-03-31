@@ -1,4 +1,3 @@
-
 <!DOCTYPE html>
 <html lang="en">
 <head>
@@ -73,8 +72,10 @@
       const title = document.getElementById("title").value.trim();
       const desc = document.getElementById("desc").value.trim();
       if (!title || !desc) return;
+
       const payload = {
         data: {
+          id: String(Date.now()),
           title: title,
           description: desc,
           status: "open",
@@ -82,11 +83,13 @@
           brand_id: BRAND_ID
         }
       };
+
       await fetch(API_URL, {
         method: "POST",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify(payload)
       });
+
       this.reset();
       loadOffers();
     });
