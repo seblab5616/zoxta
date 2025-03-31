@@ -74,7 +74,10 @@
 
       document.getElementById("offerForm").addEventListener("submit", async function(e) {
         e.preventDefault();
-        const title = document.getElementById("title").value.trim();
+        const titleInput = document.getElementById("title");
+console.log("Found title input:", titleInput);
+console.log("Value inside input:", titleInput?.value);
+const title = titleInput?.value.trim();
         const desc = document.getElementById("desc").value.trim();
         const slots = document.getElementById("slots").value.trim();
         if (!title || !desc || !slots) return;
