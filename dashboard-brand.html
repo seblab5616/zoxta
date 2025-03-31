@@ -42,59 +42,63 @@
     <a href="privacy.html">Privacy Policy</a> | <a href="terms.html">Terms of Use</a>
   </footer>
 
+  <!-- ✅ Весь JavaScript -->
   <script>
-    const API_URL = "https://sheetdb.io/api/v1/yevywzm4at1j6";
-    const BRAND_ID = "demo_brand";
+    document.addEventListener("DOMContentLoaded", function () {
+      const API_URL = "https://sheetdb.io/api/v1/yevywzm4at1j6";
+      const BRAND_ID = "demo_brand";
 
-    async function loadOffers() {
-      const res = await fetch(API_URL + "?brand_id=" + BRAND_ID);
-      const data = await res.json();
-      const offersDiv = document.getElementById("offersList");
-      if (data.length === 0) {
-        offersDiv.innerHTML = "<p>No campaigns found.</p>";
-        return;
-      }
-      offersDiv.innerHTML = "";
-      data.forEach(offer => {
-        const el = document.createElement("div");
-        el.className = "offer";
-        el.innerHTML = `
-          <h3>${offer.title}</h3>
-          <div class="offer-status">${offer.description}</div>
-          <div class="offer-status">Status: ${offer.status}</div>
-        `;
-        offersDiv.appendChild(el);
-      });
-    }
-
-    document.getElementById("offerForm").addEventListener("submit", async function(e) {
-      e.preventDefault();
-      const title = document.getElementById("title").value.trim();
-      const desc = document.getElementById("desc").value.trim();
-      if (!title || !desc) return;
-
-      const payload = {
-        data: {
-          id: String(Date.now()),
-          title: title,
-          description: desc,
-          status: "open",
-          type: "brand",
-          brand_id: BRAND_ID
+      async function loadOffers() {
+        const res = await fetch(API_URL + "?brand_id=" + BRAND_ID);
+        const data = await res.json();
+        const offersDiv = document.getElementById("offersList");
+        if (data.length === 0) {
+          offersDiv.innerHTML = "<p>No campaigns found.</p>";
+          return;
         }
-      };
+        offersDiv.innerHTML = "";
+        data.forEach(offer => {
+          const el = document.createElement("div");
+          el.className = "offer";
+          el.innerHTML = `
+            <h3>${offer.title}</h3>
+            <div class="offer-status">${offer.description}</div>
+            <div class="offer-status">Status: ${offer.status}</div>
+          `;
+          offersDiv.appendChild(el);
+        });
+      }
 
-      await fetch(API_URL, {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify(payload)
+      document.getElementById("offerForm").addEventListener("submit", async function(e) {
+        e.preventDefault();
+        const title = document.getElementById("title").value.trim();
+        const desc = document.getElementById("desc").value.trim();
+        if (!title || !desc) return;
+
+        const payload = {
+          data: {
+            id: String(Date.now()),
+            title: title,
+            description: desc,
+            status: "open",
+            type: "brand",
+            brand_id: BRAND_ID
+          }
+        };
+
+        console.log("Submitting to API:", payload); // проверка
+        await fetch(API_URL, {
+          method: "POST",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify(payload)
+        });
+
+        this.reset();
+        loadOffers();
       });
 
-      this.reset();
       loadOffers();
     });
-
-    loadOffers();
   </script>
 </body>
 </html>
