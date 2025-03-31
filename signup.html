@@ -5,18 +5,77 @@
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <title>Zoxta — Sign Up</title>
-  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;600&display=swap" rel="stylesheet">
   <base href="/zoxta/">
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;600&display=swap" rel="stylesheet">
   <style>
-    body { margin: 0; font-family: 'Inter', sans-serif; background: linear-gradient(135deg, #1e1e2f, #2e2e45); color: white; display: flex; justify-content: center; align-items: center; height: 100vh; }
-    .signup-box { background: #ffffff10; backdrop-filter: blur(10px); padding: 2rem; border-radius: 20px; box-shadow: 0 10px 30px rgba(0,0,0,0.3); width: 90%; max-width: 400px; }
-    h2 { text-align: center; }
-    label { display: block; margin-top: 1rem; color: #eee; font-weight: 600; }
-    input, select, button { width: 100%; margin-top: 0.5rem; padding: 0.8rem; border: none; border-radius: 10px; font-size: 1rem; }
-    button { background: #ff4c60; color: white; margin-top: 2rem; font-weight: 600; cursor: pointer; }
+    body {
+      margin: 0;
+      font-family: 'Inter', sans-serif;
+      background: #e4f8e0;
+      color: white;
+      display: flex;
+      justify-content: center;
+      align-items: center;
+      height: 100vh;
+      overflow: hidden;
+      position: relative;
+    }
+    .background {
+      position: absolute;
+      top: -100px;
+      left: -100px;
+      width: 200%;
+      height: 200%;
+      background: radial-gradient(circle at 30% 30%, #b2f7b2, transparent 60%),
+                  radial-gradient(circle at 70% 70%, #82e082, transparent 60%);
+      animation: floatBG 10s ease-in-out infinite;
+      z-index: 0;
+    }
+    @keyframes floatBG {
+      0% { transform: scale(1) translate(0, 0); }
+      50% { transform: scale(1.05) translate(-20px, -20px); }
+      100% { transform: scale(1) translate(0, 0); }
+    }
+    .signup-box {
+      background: #ffffff15;
+      backdrop-filter: blur(12px);
+      padding: 2rem;
+      border-radius: 20px;
+      box-shadow: 0 10px 30px rgba(0,0,0,0.2);
+      width: 90%;
+      max-width: 400px;
+      position: relative;
+      z-index: 2;
+    }
+    h2 {
+      text-align: center;
+      color: #fff;
+    }
+    label {
+      display: block;
+      margin-top: 1rem;
+      color: #eee;
+      font-weight: 600;
+    }
+    input, select, button {
+      width: 100%;
+      margin-top: 0.5rem;
+      padding: 0.8rem;
+      border: none;
+      border-radius: 10px;
+      font-size: 1rem;
+    }
+    button {
+      background: #4dbf4d;
+      color: white;
+      margin-top: 2rem;
+      font-weight: 600;
+      cursor: pointer;
+    }
   </style>
 </head>
 <body>
+  <div class="background"></div>
   <div class="signup-box">
     <h2>Join Zoxta</h2>
     <form id="signupForm">
@@ -32,6 +91,7 @@
       <button type="submit">Sign Up</button>
     </form>
   </div>
+
   <script>
     document.getElementById("signupForm").addEventListener("submit", function(e) {
       e.preventDefault();
