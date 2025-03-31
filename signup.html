@@ -1,3 +1,4 @@
+
 <!DOCTYPE html>
 <html lang="en">
 <head>
@@ -64,6 +65,12 @@
       border: none;
       margin-top: 1rem;
     }
+    .error {
+      margin-top: 1rem;
+      color: #ef4444;
+      text-align: center;
+      font-size: 0.95rem;
+    }
     footer {
       text-align: center;
       position: relative;
@@ -82,13 +89,16 @@
   <div class="background"></div>
 
   <div class="signup-box">
-    <h2>Join Zoxta</h2>
+    <h2>Create Account</h2>
     <form id="signupForm">
       <label for="name">Your Name</label>
       <input type="text" id="name" required />
 
       <label for="email">Email</label>
       <input type="email" id="email" required />
+
+      <label for="password">Password</label>
+      <input type="password" id="password" required />
 
       <label for="role">I am a...</label>
       <select id="role" required>
@@ -97,6 +107,7 @@
       </select>
 
       <button type="submit">Sign Up</button>
+      <div id="error" class="error"></div>
     </form>
   </div>
 
@@ -106,9 +117,44 @@
   </footer>
 
   <script>
-    document.getElementById("signupForm").addEventListener("submit", function(e) {
+    const API_URL = "https://sheetdb.io/api/v1/ua6o4sykaiz50";
+
+    document.getElementById("signupForm").addEventListener("submit", async function(e) {
       e.preventDefault();
+
+      const name = document.getElementById("name").value.trim();
+      const email = document.getElementById("email").value.trim().toLowerCase();
+      const password = document.getElementById("password").value;
       const role = document.getElementById("role").value;
+      const errorBox = document.getElementById("error");
+      errorBox.innerText = "";
+
+      // Check if email already exists
+      const check = await fetch(`${API_URL}/search?email=${encodeURIComponent(email)}`);
+      const existing = await check.json();
+
+      if (existing.length > 0) {
+        errorBox.innerText = "This email is already registered.";
+        return;
+      }
+
+      const payload = {
+        data: {
+          id: String(Date.now()),
+          name: name,
+          email: email,
+          password: password,
+          role: role
+        }
+      };
+
+      await fetch(API_URL, {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify(payload)
+      });
+
+      // Redirect to dashboard
       if (role === "brand") {
         window.location.href = "dashboard-brand.html";
       } else {
