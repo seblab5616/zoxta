@@ -1,0 +1,50 @@
+
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Zoxta — Sign Up</title>
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;600&display=swap" rel="stylesheet">
+  <base href="/zoxta/">
+  <style>
+    body { margin: 0; font-family: 'Inter', sans-serif; background: linear-gradient(135deg, #1e1e2f, #2e2e45); color: white; display: flex; justify-content: center; align-items: center; height: 100vh; }
+    .signup-box { background: #ffffff10; backdrop-filter: blur(10px); padding: 2rem; border-radius: 20px; box-shadow: 0 10px 30px rgba(0,0,0,0.3); width: 90%; max-width: 400px; }
+    h2 { text-align: center; }
+    label { display: block; margin-top: 1rem; color: #eee; font-weight: 600; }
+    input, select, button { width: 100%; margin-top: 0.5rem; padding: 0.8rem; border: none; border-radius: 10px; font-size: 1rem; }
+    button { background: #ff4c60; color: white; margin-top: 2rem; font-weight: 600; cursor: pointer; }
+  </style>
+</head>
+<body>
+  <div class="signup-box">
+    <h2>Join Zoxta</h2>
+    <form id="signupForm">
+      <label for="name">Name</label>
+      <input type="text" id="name" name="name" required>
+      <label for="email">Email</label>
+      <input type="email" id="email" name="email" required>
+      <label for="role">I am a:</label>
+      <select id="role" name="role" required>
+        <option value="brand">Brand / Advertiser</option>
+        <option value="creator">Creator / Influencer</option>
+      </select>
+      <button type="submit">Sign Up</button>
+    </form>
+  </div>
+  <script>
+    document.getElementById("signupForm").addEventListener("submit", function(e) {
+      e.preventDefault();
+      const name = document.getElementById("name").value;
+      const email = document.getElementById("email").value;
+      const role = document.getElementById("role").value;
+      localStorage.setItem("zoxtaUser", JSON.stringify({ name, email, role }));
+      if (role === "brand") {
+        window.location.href = "dashboard-brand.html";
+      } else {
+        window.location.href = "dashboard-creator.html";
+      }
+    });
+  </script>
+</body>
+</html>

@@ -1,0 +1,1 @@
+Zoxta full package with routing ready for GitHub Pages.
