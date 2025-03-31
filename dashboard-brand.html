@@ -34,6 +34,8 @@
       <input type="text" id="title" required>
       <label>Description</label>
       <textarea id="desc" rows="3" required></textarea>
+      <label>How many creators do you need?</label>
+      <input type="number" id="slots" min="1" value="1" required>
       <button type="submit">Publish Offer</button>
     </form>
   </div>
@@ -42,7 +44,6 @@
     <a href="privacy.html">Privacy Policy</a> | <a href="terms.html">Terms of Use</a>
   </footer>
 
-  <!-- ✅ Весь JavaScript -->
   <script>
     document.addEventListener("DOMContentLoaded", function () {
       const API_URL = "https://sheetdb.io/api/v1/yevywzm4at1j6";
@@ -63,6 +64,7 @@
           el.innerHTML = `
             <h3>${offer.title}</h3>
             <div class="offer-status">${offer.description}</div>
+            <div class="offer-status">Needed: ${offer.slots || 1} creators</div>
             <div class="offer-status">Status: ${offer.status}</div>
           `;
           offersDiv.appendChild(el);
@@ -73,20 +75,22 @@
         e.preventDefault();
         const title = document.getElementById("title").value.trim();
         const desc = document.getElementById("desc").value.trim();
-        if (!title || !desc) return;
+        const slots = document.getElementById("slots").value.trim();
+        if (!title || !desc || !slots) return;
 
         const payload = {
           data: {
             id: String(Date.now()),
             title: title,
             description: desc,
-            status: "open",
+            slots: slots,
+            status: "pending",
             type: "brand",
             brand_id: BRAND_ID
           }
         };
 
-        console.log("Submitting to API:", payload); // проверка
+        console.log("Sending:", payload);
         await fetch(API_URL, {
           method: "POST",
           headers: { "Content-Type": "application/json" },
@@ -102,3 +106,9 @@
   </script>
 </body>
 </html>
+"""
+
+# Save to file
+file_path = Path("/mnt/data/dashboard-brand-updated.html")
+file_path.write_text(dashboard_fixed)
+file_path
