@@ -14,9 +14,10 @@
       background: #e4f8e0;
       color: white;
       display: flex;
+      flex-direction: column;
       justify-content: center;
       align-items: center;
-      height: 100vh;
+      min-height: 100vh;
       overflow: hidden;
       position: relative;
     }
@@ -72,6 +73,18 @@
       font-weight: 600;
       cursor: pointer;
     }
+    footer {
+      text-align: center;
+      font-size: 0.85rem;
+      color: #555;
+      margin-top: 3rem;
+      z-index: 2;
+    }
+    footer a {
+      color: #333;
+      text-decoration: none;
+      margin: 0 0.5rem;
+    }
   </style>
 </head>
 <body>
@@ -91,6 +104,9 @@
       <button type="submit">Sign Up</button>
     </form>
   </div>
+  <footer>
+    <a href="privacy.html">Privacy Policy</a> | <a href="terms.html">Terms of Use</a>
+  </footer>
   <script>
     document.getElementById("signupForm").addEventListener("submit", function(e) {
       e.preventDefault();
