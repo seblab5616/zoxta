@@ -1,3 +1,4 @@
+
 <!DOCTYPE html>
 <html lang="en">
 <head>
@@ -52,6 +53,12 @@
       line-height: 1.6;
       margin-bottom: 2rem;
     }
+    .buttons {
+      display: flex;
+      justify-content: center;
+      gap: 1rem;
+      flex-wrap: wrap;
+    }
     a.button {
       background: #4dbf4d;
       color: white;
@@ -60,6 +67,11 @@
       border-radius: 12px;
       text-decoration: none;
       font-size: 1rem;
+    }
+    a.secondary {
+      background: white;
+      color: #4dbf4d;
+      border: 2px solid #4dbf4d;
     }
     footer {
       position: absolute;
@@ -81,8 +93,16 @@
   <div class="main-content">
     <div class="logo">Zoxta</div>
     <h1>Connect Your Brand to Real Creators</h1>
-    <p>Zoxta is a platform that helps small and local brands connect with micro-influencers, streamers, and content creators. Post offers, get matched, and collaborate — all in one place.</p>
-    <a class="button" href="signup.html">Get Started</a>
+    <p>
+      Zoxta is a smart matchmaking platform where small brands and independent creators collaborate directly.
+      Whether you're a handmade jewelry seller or a food blogger with 1k+ followers — Zoxta helps you find
+      perfect partners without intermediaries, inflated prices, or complicated tools. Post campaigns, accept offers,
+      and start working together instantly.
+    </p>
+    <div class="buttons">
+      <a class="button" href="signup.html">Join Now</a>
+      <a class="button secondary" href="login.html">Log In</a>
+    </div>
   </div>
 
   <footer>
