@@ -1,75 +1,82 @@
-
 <!DOCTYPE html>
 <html lang="en">
 <head>
-  <meta charset="UTF-8" />
+  <meta charset="UTF-8">
   <base href="/zoxta/">
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
   <title>Zoxta — Influencer Matchmaking Platform</title>
   <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;600&display=swap" rel="stylesheet">
   <style>
-    body {
-      font-family: 'Inter', sans-serif;
-      background: #e4f8e0;
+    body, html {
       margin: 0;
-      padding: 2rem;
-      color: #222;
+      padding: 0;
+      font-family: 'Inter', sans-serif;
+      height: 100%;
+      overflow: hidden;
     }
-    header, footer {
+    .background {
+      position: fixed;
+      width: 200%;
+      height: 200%;
+      background: radial-gradient(circle at 20% 30%, #b8ffcb, transparent 50%),
+                  radial-gradient(circle at 80% 70%, #7affae, transparent 50%);
+      animation: floatBG 15s ease-in-out infinite;
+      z-index: -1;
+    }
+    @keyframes floatBG {
+      0% { transform: scale(1) translate(0, 0); }
+      50% { transform: scale(1.05) translate(-30px, -30px); }
+      100% { transform: scale(1) translate(0, 0); }
+    }
+    .main-content {
+      z-index: 1;
+      position: relative;
       text-align: center;
-      margin-bottom: 2rem;
+      padding: 8% 2rem;
+      color: #1a1a1a;
     }
     h1 {
       font-size: 2.5rem;
-      margin-bottom: 0.5rem;
+      margin-bottom: 1rem;
     }
-    .section {
-      max-width: 800px;
-      margin: 2rem auto;
-      padding: 1rem;
-      background: white;
-      border-radius: 10px;
-      box-shadow: 0 4px 12px rgba(0,0,0,0.05);
+    p {
+      font-size: 1.2rem;
+      margin-bottom: 2rem;
     }
-    .section h2 {
-      margin-top: 0;
-    }
-    .button {
-      display: inline-block;
-      margin-top: 1rem;
+    a.button {
       background: #4dbf4d;
       color: white;
       padding: 0.75rem 1.5rem;
       font-weight: 600;
-      border-radius: 10px;
+      border-radius: 12px;
+      text-decoration: none;
+      font-size: 1rem;
+    }
+    footer {
+      position: absolute;
+      bottom: 1rem;
+      width: 100%;
+      text-align: center;
+      font-size: 0.85rem;
+      color: #555;
+    }
+    footer a {
+      color: #444;
+      margin: 0 0.5rem;
       text-decoration: none;
     }
   </style>
 </head>
 <body>
-  <header>
+  <div class="background"></div>
+  <div class="main-content">
     <h1>Welcome to Zoxta</h1>
-    <p>Where brands and influencers meet and deals get done</p>
-  </header>
-
-  <div class="section">
-    <h2>For Brands</h2>
-    <p>Launch campaigns and instantly connect with influencers who match your niche. Track responses and manage deals from one dashboard.</p>
-  </div>
-
-  <div class="section">
-    <h2>For Creators</h2>
-    <p>Browse brand offers, accept paid collaborations, and grow your monetization — all in one place.</p>
-  </div>
-
-  <div class="section" style="text-align: center;">
-    <h2>Get Started</h2>
-    <p>Register your brand or creator profile now to access live offers.</p>
-    <a href="signup.html" class="button">Join Now</a>
+    <p>The platform where brands and creators collaborate in one click.</p>
+    <a class="button" href="signup.html">Join Now</a>
   </div>
 
   <footer>
-    <a href="privacy.html">Privacy Policy</a> |
+    <a href="privacy.html">Privacy Policy</a> | 
     <a href="terms.html">Terms of Use</a>
   </footer>
 </body>
