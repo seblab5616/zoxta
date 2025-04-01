@@ -48,7 +48,27 @@
   <script>
     document.addEventListener("DOMContentLoaded", function () {
       const API_URL = "https://sheetdb.io/api/v1/yevywzm4at1j6";
-      const BRAND_ID = "demo_brand";
+     <script>
+  let BRAND_ID = "";
+  let CURRENT_USER = null;
+
+  try {
+    const stored = localStorage.getItem("zoxtaUser");
+    if (stored) {
+      CURRENT_USER = JSON.parse(stored);
+      if (CURRENT_USER.role !== "brand") {
+        window.location.href = "login.html";
+      }
+      BRAND_ID = CURRENT_USER.id;
+      document.getElementById("brandId").textContent = BRAND_ID;
+    } else {
+      window.location.href = "login.html";
+    }
+  } catch (err) {
+    console.error("Login check failed", err);
+    window.location.href = "login.html";
+  }
+</script>
 
       async function loadOffers() {
         const res = await fetch(API_URL + "?brand_id=" + BRAND_ID);
