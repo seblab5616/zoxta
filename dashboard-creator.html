@@ -1,3 +1,4 @@
+
 <!DOCTYPE html>
 <html lang="en">
 <head>
@@ -7,74 +8,123 @@
   <title>Zoxta — Creator Dashboard</title>
   <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;600&display=swap" rel="stylesheet" />
   <style>
-    body { font-family: 'Inter', sans-serif; margin: 0; background: #f9fafb; }
-    header { background: #000; color: #fff; padding: 1rem 2rem; font-size: 1.2rem; font-weight: 600; }
-    .container { max-width: 900px; margin: 2rem auto; background: white; padding: 2rem; border-radius: 12px; box-shadow: 0 4px 20px rgba(0,0,0,0.05); }
-    .offer { border: 1px solid #eee; border-radius: 10px; padding: 1rem; margin-bottom: 1rem; }
-    .offer h3 { margin: 0 0 0.3rem; }
-    .offer-status { color: #888; font-size: 0.9rem; margin-bottom: 0.5rem; }
-    button { padding: 0.5rem 1rem; border-radius: 8px; border: none; cursor: pointer; font-weight: 600; margin-right: 0.5rem; }
-    .accept { background: #4dbf4d; color: white; }
-    .decline { background: #ccc; color: #222; }
-    footer { text-align: center; margin-top: 2rem; color: #888; }
-    footer a { color: #666; text-decoration: none; margin: 0 0.5rem; }
+    body { font-family: 'Inter', sans-serif; margin: 0; background: #f1f5f9; color: #1a1a1a; }
+    header { background: #000; color: #fff; padding: 1rem 2rem; font-size: 1.4rem; font-weight: bold; }
+    .container { max-width: 900px; margin: 2rem auto; padding: 0 1rem; }
+    .section { margin-bottom: 2rem; }
+    .offer-card {
+      background: white;
+      border-radius: 12px;
+      padding: 1rem;
+      box-shadow: 0 2px 10px rgba(0,0,0,0.05);
+      margin-bottom: 1rem;
+    }
+    .offer-card h3 { margin-top: 0; }
+    .offer-card p { margin: 0.3rem 0; }
+    .apply-btn {
+      background: #4dbf4d;
+      color: white;
+      font-weight: 600;
+      border: none;
+      padding: 0.5rem 1rem;
+      border-radius: 8px;
+      cursor: pointer;
+      margin-top: 0.5rem;
+    }
+    .profile-box {
+      background: #fff;
+      border-radius: 12px;
+      padding: 1rem;
+      margin-bottom: 2rem;
+      box-shadow: 0 2px 8px rgba(0,0,0,0.06);
+    }
+    .section-title {
+      font-size: 1.2rem;
+      font-weight: 600;
+      margin-bottom: 1rem;
+    }
   </style>
 </head>
 <body>
   <header>Zoxta — Creator Dashboard</header>
   <div class="container">
-    <h2>Available Offers</h2>
-    <div id="offersList">Loading offers...</div>
+    <div class="profile-box">
+      <strong>Welcome, Creator!</strong><br />
+      Your ID: <span id="creatorId">creator_001</span>
+    </div>
+
+    <div class="section">
+      <div class="section-title">Available Offers</div>
+      <div id="offersList">Loading...</div>
+    </div>
+
+    <div class="section">
+      <div class="section-title">My Responses</div>
+      <div id="myOffers">Loading...</div>
+    </div>
   </div>
 
-  <footer>
-    <a href="privacy.html">Privacy Policy</a> | <a href="terms.html">Terms of Use</a>
-  </footer>
-
   <script>
-    document.addEventListener("DOMContentLoaded", function () {
-      const API_URL = "https://sheetdb.io/api/v1/yevywzm4at1j6";
-      const CREATOR_ID = "demo_creator";
+    const API_URL = "https://sheetdb.io/api/v1/yevywzm4at1j6";
+    const CREATOR_ID = "creator_001"; // позже можно будет заменить динамически
 
-      async function loadOffers() {
-        const res = await fetch(API_URL + "?status=open&type=brand");
-        const data = await res.json();
-        const offersDiv = document.getElementById("offersList");
-        if (data.length === 0) {
-          offersDiv.innerHTML = "<p>No active offers at the moment.</p>";
-          return;
-        }
-        offersDiv.innerHTML = "";
-        data.forEach((offer) => {
-          const el = document.createElement("div");
-          el.className = "offer";
-          el.innerHTML = `
-            <h3>${offer.title}</h3>
-            <div class="offer-status">${offer.description}</div>
-            <button class="accept" onclick="respond('${offer.id}', 'accepted')">Accept</button>
-            <button class="decline" onclick="respond('${offer.id}', 'declined')">Decline</button>
-          `;
-          offersDiv.appendChild(el);
-        });
+    async function loadOffers() {
+      const res = await fetch(API_URL + "?status=approved");
+      const data = await res.json();
+      const list = document.getElementById("offersList");
+      list.innerHTML = "";
+      if (data.length === 0) {
+        list.innerHTML = "<p>No approved offers available.</p>";
+        return;
       }
+      data.forEach(offer => {
+        if (offer.creator_id && offer.creator_id.includes(CREATOR_ID)) return;
+        const el = document.createElement("div");
+        el.className = "offer-card";
+        el.innerHTML = `
+          <h3>${offer.title}</h3>
+          <p>${offer.description}</p>
+          <p><strong>Slots:</strong> ${offer.slots || '—'}</p>
+          <button class="apply-btn" onclick="applyToOffer('${offer.id}')">Apply</button>
+        `;
+        list.appendChild(el);
+      });
+    }
 
-      window.respond = async function (id, status) {
-        const payload = {
-          data: {
-            status: status,
-            creator_id: CREATOR_ID
-          }
-        };
-        console.log("Updating offer", id, status);
-        await fetch(`${API_URL}/id/${id}`, {
-          method: "PATCH",
-          headers: { "Content-Type": "application/json" },
-          body: JSON.stringify(payload)
-        });
-        loadOffers();
-      };
+    async function loadMyResponses() {
+      const res = await fetch(API_URL + "?creator_id=" + CREATOR_ID);
+      const data = await res.json();
+      const list = document.getElementById("myOffers");
+      list.innerHTML = "";
+      if (data.length === 0) {
+        list.innerHTML = "<p>No responses yet.</p>";
+        return;
+      }
+      data.forEach(offer => {
+        const el = document.createElement("div");
+        el.className = "offer-card";
+        el.innerHTML = `
+          <h3>${offer.title}</h3>
+          <p>${offer.description}</p>
+          <p><strong>Status:</strong> ${offer.status}</p>
+        `;
+        list.appendChild(el);
+      });
+    }
 
+    async function applyToOffer(id) {
+      await fetch(API_URL + "/id/" + id, {
+        method: "PATCH",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ data: { creator_id: CREATOR_ID } })
+      });
       loadOffers();
+      loadMyResponses();
+    }
+
+    document.addEventListener("DOMContentLoaded", () => {
+      loadOffers();
+      loadMyResponses();
     });
   </script>
 </body>
