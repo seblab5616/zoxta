@@ -50,7 +50,7 @@
   <div class="container">
     <div class="profile-box">
       <strong>Welcome, Creator!</strong><br />
-      Your ID: <span id="creatorId">creator_001</span>
+      Your ID: <span id="creatorId">loading...</span>
     </div>
 
     <div class="section">
@@ -66,22 +66,25 @@
 
   <script>
     const API_URL = "https://sheetdb.io/api/v1/yevywzm4at1j6";
-   let CREATOR_ID = "";
-let CURRENT_USER = null;
+    let CREATOR_ID = "";
+    let CURRENT_USER = null;
 
-try {
-  const stored = localStorage.getItem("zoxtaUser");
-  if (stored) {
-    CURRENT_USER = JSON.parse(stored);
-    CREATOR_ID = CURRENT_USER.id;
-    document.getElementById("creatorId").textContent = CREATOR_ID;
-  } else {
-    window.location.href = "login.html";
-  }
-} catch (err) {
-  console.error("Login check failed", err);
-  window.location.href = "login.html";
-}
+    try {
+      const stored = localStorage.getItem("zoxtaUser");
+      if (stored) {
+        CURRENT_USER = JSON.parse(stored);
+        if (CURRENT_USER.role !== "creator") {
+          window.location.href = "login.html";
+        }
+        CREATOR_ID = CURRENT_USER.id;
+        document.getElementById("creatorId").textContent = CREATOR_ID;
+      } else {
+        window.location.href = "login.html";
+      }
+    } catch (err) {
+      console.error("Login check failed", err);
+      window.location.href = "login.html";
+    }
 
     async function loadOffers() {
       const res = await fetch(API_URL + "?status=approved");
