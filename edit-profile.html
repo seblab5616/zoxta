@@ -80,7 +80,11 @@
       <label for="twitch">Twitch URL</label>
       <input type="url" id="twitch" placeholder="https://twitch.tv/..." />
 
-      <button type="submit">Save Profile</button>
+      
+    <label for="avatar">Avatar Image URL</label>
+    <input type="url" id="avatar" placeholder="https://..." />
+    <button type="submit">Save Profile</button>
+    
       <div id="message" class="success"></div>
     </form>
   </div>
@@ -101,6 +105,7 @@
         document.getElementById("tiktok").value = CURRENT_USER.tiktok || "";
         document.getElementById("youtube").value = CURRENT_USER.youtube || "";
         document.getElementById("twitch").value = CURRENT_USER.twitch || "";
+        document.getElementById("avatar").value = CURRENT_USER.avatar || "";
       } else {
         window.location.href = "login.html";
       }
@@ -119,7 +124,8 @@
           instagram: document.getElementById("instagram").value,
           tiktok: document.getElementById("tiktok").value,
           youtube: document.getElementById("youtube").value,
-          twitch: document.getElementById("twitch").value
+          twitch: document.getElementById("twitch").value,
+          avatar: document.getElementById("avatar").value
         }
       };
 
