@@ -1,0 +1,136 @@
+
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <base href="/zoxta/">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+  <title>Edit Profile — Zoxta</title>
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;600&display=swap" rel="stylesheet"/>
+  <style>
+    body {
+      font-family: 'Inter', sans-serif;
+      margin: 0;
+      background: #f9fafb;
+      padding: 2rem;
+      color: #1a1a1a;
+    }
+    .container {
+      max-width: 600px;
+      margin: 0 auto;
+      background: #fff;
+      padding: 2rem;
+      border-radius: 16px;
+      box-shadow: 0 8px 24px rgba(0,0,0,0.05);
+    }
+    h2 {
+      margin-top: 0;
+    }
+    label {
+      font-weight: 600;
+      display: block;
+      margin-top: 1rem;
+    }
+    input, textarea {
+      width: 100%;
+      padding: 0.7rem;
+      margin-top: 0.3rem;
+      border-radius: 10px;
+      border: 1px solid #ccc;
+      font-family: inherit;
+      font-size: 1rem;
+    }
+    button {
+      background: #4dbf4d;
+      color: white;
+      border: none;
+      border-radius: 10px;
+      padding: 0.75rem 1.5rem;
+      font-weight: bold;
+      cursor: pointer;
+      margin-top: 2rem;
+      width: 100%;
+    }
+    .success {
+      color: #16a34a;
+      margin-top: 1rem;
+      text-align: center;
+    }
+  </style>
+</head>
+<body>
+  <div class="container">
+    <h2>Edit Your Profile</h2>
+    <form id="profileForm">
+      <label for="name">Name</label>
+      <input type="text" id="name" required />
+
+      <label for="description">Short Bio</label>
+      <textarea id="description" rows="4" placeholder="Tell us about yourself..."></textarea>
+
+      <label for="instagram">Instagram URL</label>
+      <input type="url" id="instagram" placeholder="https://instagram.com/..." />
+
+      <label for="tiktok">TikTok URL</label>
+      <input type="url" id="tiktok" placeholder="https://tiktok.com/@..." />
+
+      <label for="youtube">YouTube URL</label>
+      <input type="url" id="youtube" placeholder="https://youtube.com/..." />
+
+      <label for="twitch">Twitch URL</label>
+      <input type="url" id="twitch" placeholder="https://twitch.tv/..." />
+
+      <button type="submit">Save Profile</button>
+      <div id="message" class="success"></div>
+    </form>
+  </div>
+
+  <script>
+    const API_URL = "https://sheetdb.io/api/v1/ua6o4sykaiz50";
+    let USER_ID = "";
+    let CURRENT_USER = null;
+
+    try {
+      const stored = localStorage.getItem("zoxtaUser");
+      if (stored) {
+        CURRENT_USER = JSON.parse(stored);
+        USER_ID = CURRENT_USER.id;
+        document.getElementById("name").value = CURRENT_USER.name || "";
+        document.getElementById("description").value = CURRENT_USER.description || "";
+        document.getElementById("instagram").value = CURRENT_USER.instagram || "";
+        document.getElementById("tiktok").value = CURRENT_USER.tiktok || "";
+        document.getElementById("youtube").value = CURRENT_USER.youtube || "";
+        document.getElementById("twitch").value = CURRENT_USER.twitch || "";
+      } else {
+        window.location.href = "login.html";
+      }
+    } catch (err) {
+      console.error("Auth failed", err);
+      window.location.href = "login.html";
+    }
+
+    document.getElementById("profileForm").addEventListener("submit", async function(e) {
+      e.preventDefault();
+
+      const payload = {
+        data: {
+          name: document.getElementById("name").value,
+          description: document.getElementById("description").value,
+          instagram: document.getElementById("instagram").value,
+          tiktok: document.getElementById("tiktok").value,
+          youtube: document.getElementById("youtube").value,
+          twitch: document.getElementById("twitch").value
+        }
+      };
+
+      await fetch(API_URL + "/id/" + USER_ID, {
+        method: "PATCH",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify(payload)
+      });
+
+      document.getElementById("message").innerText = "Profile updated successfully!";
+    });
+  </script>
+</body>
+</html>
