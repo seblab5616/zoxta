@@ -66,7 +66,8 @@
         <input type="text" id="title" placeholder="Campaign title" required />
         <textarea id="description" placeholder="Short description" required></textarea>
         <input type="text" id="type" placeholder="Campaign type (e.g. product review)" required />
-        <input type="number" id="slots" placeholder="How many influencers needed?" required />
+        <input type="number" id="price" placeholder="Payment per creator (USD)" />
+        <input type="number" id="slots" placeholder="Number of influencers (leave empty for unlimited)" />
         <button type="submit">Post Campaign</button>
       </form>
     </div>
@@ -107,7 +108,8 @@
           title: document.getElementById("title").value,
           description: document.getElementById("description").value,
           type: document.getElementById("type").value,
-          slots: document.getElementById("slots").value,
+          price: document.getElementById("price").value || "",
+          slots: document.getElementById("slots").value || "",
           status: "pending",
           creator_id: "",
           brand_id: BRAND_ID
@@ -132,13 +134,17 @@
         return;
       }
       data.forEach(offer => {
+        const applicants = offer.creator_id ? offer.creator_id.split(',').length : 0;
+        const maxSlots = offer.slots || "∞";
         const el = document.createElement("div");
         el.className = "card";
         el.innerHTML = `
           <h3>${offer.title}</h3>
           <p>${offer.description}</p>
+          <p><strong>Type:</strong> ${offer.type}</p>
+          <p><strong>Payment:</strong> $${offer.price || "—"}</p>
           <p><strong>Status:</strong> ${offer.status}</p>
-          <p><strong>Applicants:</strong> ${offer.creator_id || "—"}</p>
+          <p><strong>Applicants:</strong> ${applicants} / ${maxSlots}</p>
         `;
         list.appendChild(el);
       });
