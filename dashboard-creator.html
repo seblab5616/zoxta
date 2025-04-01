@@ -96,14 +96,20 @@
         return;
       }
       data.forEach(offer => {
-        if (offer.creator_id && offer.creator_id.includes(CREATOR_ID)) return;
+        const applied = offer.creator_id && offer.creator_id.split(",").includes(CREATOR_ID);
+        if (applied) return;
+        const currentApplicants = offer.creator_id ? offer.creator_id.split(",").length : 0;
+        const maxSlots = offer.slots || "∞";
+        if (offer.slots && currentApplicants >= parseInt(offer.slots)) return;
+
         const el = document.createElement("div");
         el.className = "offer-card";
         el.innerHTML = `
           <h3>${offer.title}</h3>
           <p>${offer.description}</p>
-          <p><strong>Slots:</strong> ${offer.slots || '—'}</p>
-          <button class="apply-btn" onclick="applyToOffer('${offer.id}')">Apply</button>
+          <p><strong>Payment:</strong> $${offer.price || "—"}</p>
+          <p><strong>Slots:</strong> ${maxSlots}</p>
+          <button class="apply-btn" onclick="applyToOffer('${offer.id}', '${offer.creator_id || ""}')">Apply</button>
         `;
         list.appendChild(el);
       });
@@ -130,11 +136,13 @@
       });
     }
 
-    async function applyToOffer(id) {
+    async function applyToOffer(id, currentIds) {
+      const updated = currentIds ? currentIds.split(",") : [];
+      updated.push(CREATOR_ID);
       await fetch(API_URL + "/id/" + id, {
         method: "PATCH",
         headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ data: { creator_id: CREATOR_ID } })
+        body: JSON.stringify({ data: { creator_id: updated.join(",") } })
       });
       loadOffers();
       loadMyResponses();
