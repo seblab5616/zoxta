@@ -66,7 +66,22 @@
 
   <script>
     const API_URL = "https://sheetdb.io/api/v1/yevywzm4at1j6";
-    const CREATOR_ID = "creator_001"; // позже можно будет заменить динамически
+   let CREATOR_ID = "";
+let CURRENT_USER = null;
+
+try {
+  const stored = localStorage.getItem("zoxtaUser");
+  if (stored) {
+    CURRENT_USER = JSON.parse(stored);
+    CREATOR_ID = CURRENT_USER.id;
+    document.getElementById("creatorId").textContent = CREATOR_ID;
+  } else {
+    window.location.href = "login.html";
+  }
+} catch (err) {
+  console.error("Login check failed", err);
+  window.location.href = "login.html";
+}
 
     async function loadOffers() {
       const res = await fetch(API_URL + "?status=approved");
