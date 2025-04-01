@@ -1,0 +1,157 @@
+
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <base href="/zoxta/">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+  <title>Zoxta — Creator Dashboard</title>
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;600&display=swap" rel="stylesheet" />
+  <style>
+    body { font-family: 'Inter', sans-serif; margin: 0; background: #f1f5f9; color: #1a1a1a; }
+    header { background: #000; color: #fff; padding: 1rem 2rem; font-size: 1.4rem; font-weight: bold; }
+    .container { max-width: 900px; margin: 2rem auto; padding: 0 1rem; }
+    .section { margin-bottom: 2rem; }
+    .offer-card {
+      background: white;
+      border-radius: 12px;
+      padding: 1rem;
+      box-shadow: 0 2px 10px rgba(0,0,0,0.05);
+      margin-bottom: 1rem;
+    }
+    .offer-card h3 { margin-top: 0; }
+    .offer-card p { margin: 0.3rem 0; }
+    .apply-btn {
+      background: #4dbf4d;
+      color: white;
+      font-weight: 600;
+      border: none;
+      padding: 0.5rem 1rem;
+      border-radius: 8px;
+      cursor: pointer;
+      margin-top: 0.5rem;
+    }
+    .profile-box {
+      background: #fff;
+      border-radius: 12px;
+      padding: 1rem;
+      margin-bottom: 2rem;
+      box-shadow: 0 2px 8px rgba(0,0,0,0.06);
+    }
+    .section-title {
+      font-size: 1.2rem;
+      font-weight: 600;
+      margin-bottom: 1rem;
+    }
+  </style>
+</head>
+<body>
+  <header>Zoxta — Creator Dashboard</header>
+  <div class="container">
+    <div class="profile-box">
+      <strong>Welcome, Creator!</strong><br />
+      Your ID: <span id="creatorId">loading...</span>
+    </div>
+
+    <div class="section">
+      <div class="section-title">Available Offers</div>
+      <div id="offersList">Loading...</div>
+    </div>
+
+    <div class="section">
+      <div class="section-title">My Responses</div>
+      <div id="myOffers">Loading...</div>
+    </div>
+  </div>
+
+  <script>
+    const API_URL = "https://sheetdb.io/api/v1/yevywzm4at1j6";
+    let CREATOR_ID = "";
+    let CURRENT_USER = null;
+
+    try {
+      const stored = localStorage.getItem("zoxtaUser");
+      if (stored) {
+        CURRENT_USER = JSON.parse(stored);
+        if (CURRENT_USER.role !== "creator") {
+          window.location.href = "login.html";
+        }
+        CREATOR_ID = CURRENT_USER.id;
+        document.getElementById("creatorId").textContent = CREATOR_ID;
+      } else {
+        window.location.href = "login.html";
+      }
+    } catch (err) {
+      console.error("Login check failed", err);
+      window.location.href = "login.html";
+    }
+
+    async function loadOffers() {
+      const res = await fetch(API_URL + "?status=approved");
+      const data = await res.json();
+      const list = document.getElementById("offersList");
+      list.innerHTML = "";
+      if (data.length === 0) {
+        list.innerHTML = "<p>No approved offers available.</p>";
+        return;
+      }
+      data.forEach(offer => {
+        const applied = offer.creator_id && offer.creator_id.split(",").includes(CREATOR_ID);
+        if (applied) return;
+        const currentApplicants = offer.creator_id ? offer.creator_id.split(",").length : 0;
+        const maxSlots = offer.slots || "∞";
+        if (offer.slots && currentApplicants >= parseInt(offer.slots)) return;
+
+        const el = document.createElement("div");
+        el.className = "offer-card";
+        el.innerHTML = `
+          <h3>${offer.title}</h3>
+          <p>${offer.description}</p>
+          <p><strong>Payment:</strong> $${offer.price || "—"}</p>
+          <p><strong>Slots:</strong> ${maxSlots}</p>
+          <button class="apply-btn" onclick="applyToOffer('${offer.id}', '${offer.creator_id || ""}')">Apply</button>
+        `;
+        list.appendChild(el);
+      });
+    }
+
+    async function loadMyResponses() {
+      const res = await fetch(API_URL + "?creator_id=" + CREATOR_ID);
+      const data = await res.json();
+      const list = document.getElementById("myOffers");
+      list.innerHTML = "";
+      if (data.length === 0) {
+        list.innerHTML = "<p>No responses yet.</p>";
+        return;
+      }
+      data.forEach(offer => {
+        const el = document.createElement("div");
+        el.className = "offer-card";
+        el.innerHTML = `
+          <h3>${offer.title}</h3>
+          <p>${offer.description}</p>
+          <p><strong>Status:</strong> ${offer.status}</p>
+        `;
+        list.appendChild(el);
+      });
+    }
+
+    async function applyToOffer(id, currentIds) {
+      const updated = currentIds ? currentIds.split(",") : [];
+      updated.push(CREATOR_ID);
+      await fetch(API_URL + "/id/" + id, {
+        method: "PATCH",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ data: { creator_id: updated.join(",") } })
+      });
+      loadOffers();
+      loadMyResponses();
+    }
+
+    document.addEventListener("DOMContentLoaded", () => {
+      loadOffers();
+      loadMyResponses();
+    });
+  </script>
+</body>
+</html>
