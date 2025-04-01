@@ -82,19 +82,26 @@
 
       const email = document.getElementById("email").value.trim().toLowerCase();
       const password = document.getElementById("password").value;
+      const errorBox = document.getElementById("error");
 
       const res = await fetch(`${API_URL}/search?email=${email}&password=${encodeURIComponent(password)}`);
       const users = await res.json();
 
       if (users.length === 0) {
-        document.getElementById("error").innerText = "Invalid email or password.";
+        errorBox.innerText = "Invalid email or password.";
         return;
       }
 
       const user = users[0];
-      if (user.role === "brand") {
+
+      // Сохраняем пользователя
+      localStorage.setItem("zoxtaUser", JSON.stringify(user));
+
+      // Переход по роли
+      const role = (user.role || "").toLowerCase();
+      if (role === "brand") {
         window.location.href = "dashboard-brand.html";
-      } else if (user.role === "creator") {
+      } else if (role === "creator") {
         window.location.href = "dashboard-creator.html";
       } else {
         window.location.href = "admin.html";
