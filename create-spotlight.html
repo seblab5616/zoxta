@@ -1,0 +1,119 @@
+
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <title>Create Spotlight Post — Zoxta</title>
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;600&display=swap" rel="stylesheet">
+  <style>
+    body {
+      font-family: 'Inter', sans-serif;
+      background: #f9fafb;
+      margin: 0;
+      padding: 2rem;
+    }
+    .form-box {
+      background: #fff;
+      padding: 2rem;
+      max-width: 600px;
+      margin: 0 auto;
+      border-radius: 12px;
+      box-shadow: 0 6px 16px rgba(0,0,0,0.05);
+    }
+    h2 {
+      text-align: center;
+      margin-bottom: 1.5rem;
+    }
+    input, textarea, select, button {
+      width: 100%;
+      padding: 0.8rem;
+      margin-bottom: 1rem;
+      font-size: 1rem;
+      border-radius: 8px;
+      border: 1px solid #ccc;
+    }
+    button {
+      background: #4dbf4d;
+      color: white;
+      font-weight: bold;
+      cursor: pointer;
+      border: none;
+    }
+    .success {
+      color: #10b981;
+      text-align: center;
+      font-weight: 600;
+      margin-top: 1rem;
+    }
+  </style>
+</head>
+<body>
+  <div class="form-box">
+    <h2>Create Spotlight Post</h2>
+    <input type="text" id="title" placeholder="Title" />
+    <textarea id="content" placeholder="Your announcement..." rows="6"></textarea>
+    <select id="category">
+      <option value="">Select category</option>
+      <option value="Fashion">Fashion</option>
+      <option value="Beauty">Beauty</option>
+      <option value="Gaming">Gaming</option>
+      <option value="Tech">Tech</option>
+      <option value="Fitness">Fitness</option>
+      <option value="Other">Other</option>
+    </select>
+    <button onclick="submitPost()">Publish</button>
+    <div class="success" id="successMsg"></div>
+  </div>
+
+  <script>
+    async function submitPost() {
+      const user = JSON.parse(localStorage.getItem("zoxtaUser") || "{}");
+      if (!user || user.role !== "brand") {
+        alert("Only brands can post!");
+        return;
+      }
+
+      const title = document.getElementById("title").value.trim();
+      const content = document.getElementById("content").value.trim();
+      const category = document.getElementById("category").value.trim();
+      const timestamp = new Date().toISOString();
+
+      if (!title || !content || !category) {
+        alert("Please fill in all fields.");
+        return;
+      }
+
+      const data = {
+        title,
+        content,
+        category,
+        timestamp,
+        brand_id: user.id
+      };
+
+      try {
+        const res = await fetch("https://sheetdb.io/api/v1/2v5szm48i9zya", {
+          method: "POST",
+          headers: {
+            "Content-Type": "application/json"
+          },
+          body: JSON.stringify({ data })
+        });
+
+        if (res.ok) {
+          document.getElementById("successMsg").textContent = "✅ Post published!";
+          document.getElementById("title").value = "";
+          document.getElementById("content").value = "";
+          document.getElementById("category").value = "";
+        } else {
+          throw new Error("Failed to post");
+        }
+      } catch (err) {
+        console.error(err);
+        alert("Error posting. Try again.");
+      }
+    }
+  </script>
+</body>
+</html>
