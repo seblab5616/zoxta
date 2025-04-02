@@ -1,3 +1,4 @@
+
 <!DOCTYPE html>
 <html lang="en">
 <head>
@@ -36,20 +37,14 @@
       border-radius: 12px;
       padding: 1.5rem;
       box-shadow: 0 4px 12px rgba(0,0,0,0.05);
+      margin-bottom: 2rem;
+    }
+    h1 {
       margin-bottom: 1rem;
     }
     .section-title {
       font-size: 1.2rem;
-      margin: 2rem 0 1rem;
-    }
-    .campaign-title {
-      font-weight: bold;
-      font-size: 1.1rem;
-      margin-bottom: 0.4rem;
-    }
-    .campaign-meta {
-      font-size: 0.9rem;
-      color: #555;
+      margin-top: 2rem;
     }
   </style>
 </head>
@@ -69,65 +64,64 @@
       <p>Your ID: <span id="userId">loading...</span></p>
     </div>
 
+    
     <h2 class="section-title">Your Campaigns</h2>
+    <div style="margin-bottom: 1rem;">
+      <button onclick="alert('Coming soon: Add Campaign!')" style="padding: 0.6rem 1.2rem; font-weight: bold; border: none; background: #4dbf4d; color: white; border-radius: 10px; cursor: pointer;">+ Add Campaign</button>
+    </div>
+    <div style="margin-bottom: 1rem;">
+      <label><strong>Filter by Status:</strong>
+        <select onchange="filterCampaigns(this.value)" style="margin-left: 0.5rem; padding: 0.4rem;">
+          <option value="">All</option>
+          <option value="approved">Approved</option>
+          <option value="pending">Pending</option>
+        </select>
+      </label>
+    </div>
+    <div id="notificationArea" style="margin-bottom: 1rem; color: #10b981; font-weight: 600;"></div>
+    
     <div id="campaignList">Loading campaigns...</div>
   </div>
 
   <script>
     let CURRENT_USER = null;
-
-    function createCampaignCard(campaign) {
-      return `
-        <div class="card">
-          <div class="campaign-title">${campaign.title || 'Untitled Campaign'}</div>
-          <div class="campaign-meta">${campaign.description || ''}</div>
-          <div class="campaign-meta">Status: ${campaign.status || 'unknown'}</div>
-          <div class="campaign-meta">Type: ${campaign.type || ''}</div>
-        </div>
-      `;
-    }
-
-    async function loadCampaigns() {
-      const campaignList = document.getElementById("campaignList");
-      try {
-        const res = await fetch("https://sheetdb.io/api/v1/yevywzm4at1j6");
-        const campaigns = await res.json();
-        const myCampaigns = campaigns.filter(c => c.brand_id === CURRENT_USER.id);
-
-        if (myCampaigns.length === 0) {
-          campaignList.innerHTML = "<p>No campaigns yet.</p>";
-        } else {
-          campaignList.innerHTML = myCampaigns.map(createCampaignCard).join("");
-        }
-      } catch (err) {
-        console.error("Failed to load campaigns", err);
-        campaignList.innerHTML = "<p>Error loading campaigns.</p>";
-      }
-    }
-
-    // Загрузка пользователя
     try {
       const stored = localStorage.getItem("zoxtaUser");
       if (stored) {
         CURRENT_USER = JSON.parse(stored);
         console.log("Loaded user:", CURRENT_USER);
-
         if ((CURRENT_USER.role || "").toLowerCase() !== "brand") {
           console.warn("User is not a brand. Redirecting...");
           window.location.href = "login.html";
         } else {
           document.getElementById("userName").textContent = CURRENT_USER.name || "Brand";
           document.getElementById("userId").textContent = CURRENT_USER.id || "unknown";
-          loadCampaigns();
         }
       } else {
+        console.warn("No user found in localStorage. Redirecting...");
         window.location.href = "login.html";
       }
     } catch (err) {
-      console.error("Error loading user", err);
+      console.error("Error parsing user from localStorage", err);
       window.location.href = "login.html";
     }
-  </script>
+  
+    function filterCampaigns(status) {
+      const list = document.getElementById("campaignList");
+      const filtered = status
+        ? window.originalCampaigns.filter(c => (c.status || "").toLowerCase() === status)
+        : window.originalCampaigns;
+
+      if (filtered.length === 0) {
+        list.innerHTML = "<p>No campaigns match this filter.</p>";
+      } else {
+        list.innerHTML = filtered.map(createCampaignCard).join("");
+      }
+
+      document.getElementById("notificationArea").textContent = "Showing " + filtered.length + " campaign(s)";
+    }
+    </script>
+
 
 </body>
 </html>
