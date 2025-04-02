@@ -1,3 +1,4 @@
+
 <!DOCTYPE html>
 <html lang="en">
 <head>
@@ -31,26 +32,6 @@
     .container {
       padding: 2rem;
     }
-    .card {
-      background: #fff;
-      border-radius: 12px;
-      padding: 1.5rem;
-      box-shadow: 0 4px 12px rgba(0,0,0,0.05);
-      margin-bottom: 1rem;
-    }
-    .section-title {
-      font-size: 1.2rem;
-      margin: 2rem 0 1rem;
-    }
-    .campaign-title {
-      font-weight: bold;
-      font-size: 1.1rem;
-      margin-bottom: 0.4rem;
-    }
-    .campaign-meta {
-      font-size: 0.9rem;
-      color: #555;
-    }
   </style>
 </head>
 <body>
@@ -58,84 +39,17 @@
   <nav>
     <a href="dashboard-creator.html">📂 <span>Offers</span></a>
     <a href="edit-profile.html">📄 <span>Profile</span></a>
+    <a href="spotlight.html">📣 <span>Spotlight</span></a>
+    <a href="create-spotlight.html">📝 <span>Create Post</span></a>
     <a href="surprise.html">🎥 <span>SurpriseMe</span></a>
     <a href="#">💬 <span>Messages</span></a>
     <a href="#">💳 <span>Payments</span></a>
   </nav>
 
   <div class="container">
-    <div class="card">
-      <p><strong>Welcome, <span id="userName">Creator</span>!</strong></p>
-      <p>Your ID: <span id="userId">loading...</span></p>
-    </div>
-
-    <h2 class="section-title">Available Offers</h2>
-    <div id="availableOffers">Loading...</div>
+    <h2>Welcome to Zoxta Creator Dashboard</h2>
+    <p>New links to Spotlight and Create Post are active!</p>
   </div>
-
-  <script>
-    let CURRENT_USER = null;
-
-    function createOfferCard(campaign) {
-      return `
-        <div class="card">
-          <div class="campaign-title">${campaign.title || 'Untitled Offer'}</div>
-          <div class="campaign-meta">${campaign.description || ''}</div>
-          <div class="campaign-meta">Brand ID: ${campaign.brand_id || '-'}</div>
-          <div class="campaign-meta">Type: ${campaign.type || '-'}</div>
-        </div>
-      `;
-    }
-
-    async function loadOffers() {
-      const container = document.getElementById("availableOffers");
-      try {
-        const res = await fetch("https://sheetdb.io/api/v1/yevywzm4at1j6");
-        const data = await res.json();
-
-        const filtered = data.filter(o => 
-          o.status?.toLowerCase() === "approved" &&
-          (
-            o.type?.toLowerCase() === "open" ||
-            !o.creator_id || o.creator_id === ""
-          )
-        );
-
-        if (filtered.length === 0) {
-          container.innerHTML = "<p>No open offers at the moment.</p>";
-        } else {
-          container.innerHTML = filtered.map(createOfferCard).join("");
-        }
-
-      } catch (err) {
-        console.error("Error loading offers", err);
-        container.innerHTML = "<p>Error loading offers.</p>";
-      }
-    }
-
-    // Логика авторизации
-    try {
-      const stored = localStorage.getItem("zoxtaUser");
-      if (stored) {
-        CURRENT_USER = JSON.parse(stored);
-        console.log("Loaded user:", CURRENT_USER);
-
-        if ((CURRENT_USER.role || "").toLowerCase() !== "creator") {
-          console.warn("User is not a creator. Redirecting...");
-          window.location.href = "login.html";
-        } else {
-          document.getElementById("userName").textContent = CURRENT_USER.name || "Creator";
-          document.getElementById("userId").textContent = CURRENT_USER.id || "unknown";
-          loadOffers();
-        }
-      } else {
-        window.location.href = "login.html";
-      }
-    } catch (err) {
-      console.error("Error loading user", err);
-      window.location.href = "login.html";
-    }
-  </script>
 
 </body>
 </html>
