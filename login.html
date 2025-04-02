@@ -72,31 +72,29 @@
       const error = document.getElementById("errorMsg");
       error.textContent = "";
 
-      if (!email || !password) {
-        error.textContent = "Please enter email and password.";
-        return;
-      }
+      
 
       try {
         const res = await fetch("https://sheetdb.io/api/v1/ua6o4sykaiz50?email=" + encodeURIComponent(email));
         const data = await res.json();
+        
 
-        if (data.length === 0 || data[0].password !== password) {
+        const matchedUser = data.find(user => user.password === password);
+        if (!matchedUser) {
           error.textContent = "Invalid email or password.";
           return;
         }
 
-        const user = data[0];
-        localStorage.setItem("zoxtaUser", JSON.stringify(user));
+        localStorage.setItem("zoxtaUser", JSON.stringify(matchedUser));
 
-        if (user.role === "brand") {
+        if (matchedUser.role === "brand") {
           window.location.href = "dashboard-brand.html";
         } else {
           window.location.href = "dashboard-creator.html";
         }
 
       } catch (err) {
-        console.error(err);
+        console.error("Login failed", err);
         error.textContent = "Login failed. Please try again.";
       }
     }
