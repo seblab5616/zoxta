@@ -1,166 +1,52 @@
 
 <!DOCTYPE html>
-<html lang="en">
+<html>
 <head>
-  <meta charset="UTF-8" />
-  <base href="/zoxta/">
-  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
-  <title>Zoxta — Sign Up</title>
-  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;600&display=swap" rel="stylesheet" />
-  <style>
-    html, body {
-      margin: 0;
-      padding: 0;
-      font-family: 'Inter', sans-serif;
-      height: 100%;
-      overflow: hidden;
-    }
-    .background {
-      position: fixed;
-      width: 200%;
-      height: 200%;
-      background: radial-gradient(circle at 20% 30%, #b8ffcb, transparent 50%),
-                  radial-gradient(circle at 80% 70%, #7affae, transparent 50%);
-      animation: floatBG 15s ease-in-out infinite;
-      z-index: -1;
-    }
-    @keyframes floatBG {
-      0% { transform: scale(1) translate(0, 0); }
-      50% { transform: scale(1.05) translate(-30px, -30px); }
-      100% { transform: scale(1) translate(0, 0); }
-    }
-    .signup-box {
-      position: relative;
-      z-index: 2;
-      max-width: 400px;
-      margin: 5% auto;
-      padding: 2rem;
-      background: rgba(255, 255, 255, 0.85);
-      backdrop-filter: blur(10px);
-      border-radius: 20px;
-      box-shadow: 0 10px 30px rgba(0,0,0,0.2);
-    }
-    h2 {
-      text-align: center;
-      margin-top: 0;
-    }
-    label {
-      display: block;
-      margin-top: 1rem;
-      font-weight: 600;
-    }
-    input, select, button {
-      width: 100%;
-      padding: 0.75rem;
-      margin-top: 0.5rem;
-      border-radius: 10px;
-      border: 1px solid #ccc;
-      font-size: 1rem;
-    }
-    button {
-      background: #4dbf4d;
-      color: white;
-      font-weight: 600;
-      cursor: pointer;
-      border: none;
-      margin-top: 1rem;
-    }
-    .error {
-      margin-top: 1rem;
-      color: #ef4444;
-      text-align: center;
-      font-size: 0.95rem;
-    }
-    footer {
-      text-align: center;
-      position: relative;
-      z-index: 2;
-      margin-top: 2rem;
-      color: #222;
-    }
-    footer a {
-      color: #222;
-      margin: 0 0.5rem;
-      text-decoration: none;
-    }
-  </style>
+  <title>Sign Up — Zoxta</title>
+  <script type="module" src="firebase.js"></script>
 </head>
 <body>
-  <div class="background"></div>
+  <h2>Register for Zoxta</h2>
+  <input type="text" id="name" placeholder="Your Name"><br>
+  <input type="email" id="email" placeholder="Email"><br>
+  <input type="password" id="password" placeholder="Password"><br>
+  <select id="role">
+    <option value="creator">Creator</option>
+    <option value="brand">Brand</option>
+  </select><br>
+  <button onclick="signup()">Sign Up</button>
 
-  <div class="signup-box">
-    <h2>Create Account</h2>
-    <form id="signupForm">
-      <label for="name">Your Name</label>
-      <input type="text" id="name" required />
+  <script type="module">
+    import { auth, db } from './firebase.js';
+    import { createUserWithEmailAndPassword } from 'https://www.gstatic.com/firebasejs/10.11.0/firebase-auth.js';
+    import { doc, setDoc } from 'https://www.gstatic.com/firebasejs/10.11.0/firebase-firestore.js';
 
-      <label for="email">Email</label>
-      <input type="email" id="email" required />
+    async function signup() {
+      const name = document.getElementById('name').value.trim();
+      const email = document.getElementById('email').value.trim();
+      const password = document.getElementById('password').value.trim();
+      const role = document.getElementById('role').value;
 
-      <label for="password">Password</label>
-      <input type="password" id="password" required />
+      try {
+        const userCredential = await createUserWithEmailAndPassword(auth, email, password);
+        const user = userCredential.user;
 
-      <label for="role">I am a...</label>
-      <select id="role" required>
-        <option value="brand">Brand / Advertiser</option>
-        <option value="creator">Creator / Influencer</option>
-      </select>
-
-      <button type="submit">Sign Up</button>
-      <div id="error" class="error"></div>
-    </form>
-  </div>
-
-  <footer>
-    <a href="privacy.html">Privacy Policy</a> | 
-    <a href="terms.html">Terms of Use</a>
-  </footer>
-
-  <script>
-    const API_URL = "https://sheetdb.io/api/v1/ua6o4sykaiz50";
-
-    document.getElementById("signupForm").addEventListener("submit", async function(e) {
-      e.preventDefault();
-
-      const name = document.getElementById("name").value.trim();
-      const email = document.getElementById("email").value.trim().toLowerCase();
-      const password = document.getElementById("password").value;
-      const role = document.getElementById("role").value;
-      const errorBox = document.getElementById("error");
-      errorBox.innerText = "";
-
-      // Check if email already exists
-      const check = await fetch(`${API_URL}/search?email=${encodeURIComponent(email)}`);
-      const existing = await check.json();
-
-      if (existing.length > 0) {
-        errorBox.innerText = "This email is already registered.";
-        return;
-      }
-
-      const payload = {
-        data: {
-          id: String(Date.now()),
+        // Firestore user data
+        await setDoc(doc(db, "users", user.uid), {
           name: name,
           email: email,
-          password: password,
-          role: role
-        }
-      };
+          role: role,
+          createdAt: new Date().toISOString()
+        });
 
-      await fetch(API_URL, {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify(payload)
-      });
-
-      // Redirect to dashboard
-      if (role === "brand") {
-        window.location.href = "dashboard-brand.html";
-      } else {
-        window.location.href = "dashboard-creator.html";
+        localStorage.setItem("zoxtaUser", JSON.stringify(user));
+        window.location.href = role === "creator" ? "dashboard-creator.html" : "dashboard-brand.html";
+      } catch (error) {
+        alert("Signup failed: " + error.message);
       }
-    });
+    }
+
+    window.signup = signup;
   </script>
 </body>
 </html>

@@ -2,112 +2,93 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
-  <meta charset="UTF-8">
-  <base href="/zoxta/">
+  <meta charset="UTF-8" />
+  <title>Welcome to Zoxta</title>
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <title>Zoxta — Influencer Matchmaking Platform</title>
-  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;600&display=swap" rel="stylesheet">
+  <link rel="icon" href="https://res.cloudinary.com/dff5ry9xi/image/upload/v1714598872/zoxta-logo-white.png" type="image/png" />
   <style>
-    html, body {
+    body {
       margin: 0;
-      padding: 0;
-      font-family: 'Inter', sans-serif;
-      height: 100%;
+      font-family: "Segoe UI", sans-serif;
+      color: #fff;
+      text-align: center;
+      height: 100vh;
+      background: linear-gradient(270deg, #a8ff78, #78ffd6, #b5fffc);
+      background-size: 600% 600%;
+      animation: gradientBG 10s ease infinite;
+      display: flex;
+      flex-direction: column;
+      justify-content: center;
+      align-items: center;
       overflow: hidden;
     }
-    .background {
-      position: fixed;
-      width: 200%;
-      height: 200%;
-      background: radial-gradient(circle at 20% 30%, #b8ffcb, transparent 50%),
-                  radial-gradient(circle at 80% 70%, #7affae, transparent 50%);
-      animation: floatBG 15s ease-in-out infinite;
-      z-index: -1;
+
+    @keyframes gradientBG {
+      0% {background-position: 0% 50%;}
+      50% {background-position: 100% 50%;}
+      100% {background-position: 0% 50%;}
     }
-    @keyframes floatBG {
-      0% { transform: scale(1) translate(0, 0); }
-      50% { transform: scale(1.05) translate(-30px, -30px); }
-      100% { transform: scale(1) translate(0, 0); }
+
+    .fade {
+      opacity: 0;
+      transform: translateY(20px);
+      animation: fadeInUp 1s ease forwards;
     }
-    .main-content {
-      z-index: 1;
-      position: relative;
-      text-align: center;
-      padding: 5% 2rem 6rem;
-      color: #1a1a1a;
-      max-width: 800px;
-      margin: 0 auto;
+
+    .fade:nth-child(2) { animation-delay: 0.3s; }
+    .fade:nth-child(3) { animation-delay: 0.6s; }
+    .fade:nth-child(4) { animation-delay: 0.9s; }
+
+    @keyframes fadeInUp {
+      to {
+        opacity: 1;
+        transform: translateY(0);
+      }
     }
-    .logo {
-      font-size: 2rem;
-      font-weight: 800;
-      margin-bottom: 1rem;
-      color: #2a2a2a;
+
+    img.logo {
+      width: 100px;
+      height: auto;
+      margin-bottom: 1em;
     }
+
     h1 {
-      font-size: 2.2rem;
-      margin-bottom: 0.75rem;
+      font-size: 3em;
+      margin-bottom: 0.2em;
     }
+
     p {
-      font-size: 1.1rem;
-      line-height: 1.6;
-      margin-bottom: 2rem;
+      font-size: 1.2em;
+      max-width: 500px;
+      margin: 0 auto 2em auto;
     }
-    .buttons {
-      display: flex;
-      justify-content: center;
-      gap: 1rem;
-      flex-wrap: wrap;
-    }
+
     a.button {
-      background: #4dbf4d;
+      display: inline-block;
+      margin: 10px;
+      padding: 14px 28px;
+      background: rgba(0, 0, 0, 0.25);
+      border: 2px solid white;
       color: white;
-      padding: 0.75rem 1.5rem;
-      font-weight: 600;
-      border-radius: 12px;
       text-decoration: none;
-      font-size: 1rem;
+      border-radius: 8px;
+      font-weight: bold;
+      transition: background 0.3s ease;
     }
-    a.secondary {
+
+    a.button:hover {
       background: white;
-      color: #4dbf4d;
-      border: 2px solid #4dbf4d;
-    }
-    footer {
-      position: absolute;
-      bottom: 1rem;
-      width: 100%;
-      text-align: center;
-      font-size: 0.85rem;
-      color: #555;
-    }
-    footer a {
-      color: #444;
-      margin: 0 0.5rem;
-      text-decoration: none;
+      color: #222;
     }
   </style>
 </head>
 <body>
-  <div class="background"></div>
-  <div class="main-content">
-    <div class="logo">Zoxta</div>
-    <h1>Connect Your Brand to Real Creators</h1>
-    <p>
-      Zoxta is a smart matchmaking platform where small brands and independent creators collaborate directly.
-      Whether you're a handmade jewelry seller or a food blogger with 1k+ followers — Zoxta helps you find
-      perfect partners without intermediaries, inflated prices, or complicated tools. Post campaigns, accept offers,
-      and start working together instantly.
-    </p>
-    <div class="buttons">
-      <a class="button" href="signup.html">Join Now</a>
-      <a class="button secondary" href="login.html">Log In</a>
-    </div>
+  <img src="https://res.cloudinary.com/dff5ry9xi/image/upload/v1714598872/zoxta-logo-white.png" alt="Zoxta Logo" class="logo fade" />
+  <h1 class="fade">Welcome to <strong>Zoxta</strong></h1>
+  <p class="fade">Zoxta is where real creators meet real opportunities. Join our network of influencers and brands to collaborate on campaigns, promotions, and stories that matter.</p>
+  <div class="fade">
+    <a class="button" href="signup.html">Sign Up</a>
+    <a class="button" href="login.html">Login</a>
   </div>
-
-  <footer>
-    <a href="privacy.html">Privacy Policy</a> | 
-    <a href="terms.html">Terms of Use</a>
-  </footer>
 </body>
 </html>

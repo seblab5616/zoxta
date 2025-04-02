@@ -1,99 +1,33 @@
 
 <!DOCTYPE html>
-<html lang="en">
+<html>
 <head>
-  <meta charset="UTF-8" />
-  <base href="./" />
-  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
-  <title>Zoxta — Login</title>
-  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;600&display=swap" rel="stylesheet" />
-  <style>
-    body {
-      font-family: 'Inter', sans-serif;
-      background: #f0fdf4;
-      display: flex;
-      justify-content: center;
-      align-items: center;
-      height: 100vh;
-      margin: 0;
-    }
-    .login-box {
-      background: white;
-      padding: 2rem;
-      border-radius: 16px;
-      box-shadow: 0 8px 30px rgba(0,0,0,0.08);
-      width: 100%;
-      max-width: 400px;
-    }
-    h2 {
-      text-align: center;
-      margin-bottom: 1.5rem;
-    }
-    input {
-      width: 100%;
-      padding: 0.7rem;
-      margin: 0.5rem 0;
-      border-radius: 10px;
-      border: 1px solid #ccc;
-      font-size: 1rem;
-    }
-    button {
-      width: 100%;
-      background: #4dbf4d;
-      color: white;
-      font-weight: 600;
-      border: none;
-      padding: 0.75rem;
-      border-radius: 10px;
-      margin-top: 1rem;
-      font-size: 1rem;
-      cursor: pointer;
-    }
-    .error {
-      color: #dc2626;
-      margin-top: 0.5rem;
-      text-align: center;
-    }
-  </style>
+  <title>Zoxta Login</title>
+  <script type="module" src="firebase.js"></script>
 </head>
 <body>
-  <div class="login-box">
-    <h2>Login to Zoxta</h2>
-    <input type="email" id="email" placeholder="Email" required />
-    <input type="password" id="password" placeholder="Password" required />
-    <button onclick="handleLogin()">Login</button>
-    <div class="error" id="errorMsg"></div>
-  </div>
+  <h2>Login to Zoxta</h2>
+  <input type="email" id="email" placeholder="Email"><br>
+  <input type="password" id="password" placeholder="Password"><br>
+  <button onclick="login()">Login</button>
 
-  <script>
-    async function handleLogin() {
-      const email = document.getElementById("email").value.trim();
-      const password = document.getElementById("password").value.trim();
-      const error = document.getElementById("errorMsg");
-      error.textContent = "";
+  <script type="module">
+    import { auth } from './firebase.js';
+    import { signInWithEmailAndPassword } from 'https://www.gstatic.com/firebasejs/10.11.0/firebase-auth.js';
 
+    async function login() {
+      const email = document.getElementById('email').value.trim();
+      const password = document.getElementById('password').value.trim();
       try {
-        const res = await fetch("https://sheetdb.io/api/v1/ua6o4sykaiz50?email=" + encodeURIComponent(email));
-        const data = await res.json();
-        const matchedUser = data.find(user => user.password === password);
-        if (!matchedUser) {
-          error.textContent = "Invalid email or password.";
-          return;
-        }
-
-        localStorage.setItem("zoxtaUser", JSON.stringify(matchedUser));
-
-        if ((matchedUser.role || "").toLowerCase() === "brand") {
-          window.location.href = "dashboard-brand.html";
-        } else {
-          window.location.href = "dashboard-creator.html";
-        }
-
-      } catch (err) {
-        console.error("Login failed", err);
-        error.textContent = "Login failed. Please try again.";
+        const userCredential = await signInWithEmailAndPassword(auth, email, password);
+        localStorage.setItem("zoxtaUser", JSON.stringify(userCredential.user));
+        window.location.href = "dashboard-brand.html"; // можешь поменять на проверку роли
+      } catch (error) {
+        alert("Login failed: " + error.message);
       }
     }
+
+    window.login = login;
   </script>
 </body>
 </html>
