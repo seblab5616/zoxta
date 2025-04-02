@@ -1,3 +1,4 @@
+
 <!DOCTYPE html>
 <html lang="en">
 <head>
@@ -86,6 +87,11 @@
       <div class="section-title">Your Campaigns</div>
       <div id="campaigns">Loading...</div>
     </div>
+
+    <div class="section">
+      <div class="section-title">🎥 Surprise Pitches from Creators</div>
+      <div id="surpriseList">Loading...</div>
+    </div>
   </div>
 
   <script>
@@ -160,7 +166,31 @@
       });
     }
 
-    document.addEventListener("DOMContentLoaded", loadCampaigns);
+    async function loadSurprisePitches() {
+      const res = await fetch(API_URL + "?type=surprise&status=approved");
+      const data = await res.json();
+      const list = document.getElementById("surpriseList");
+      list.innerHTML = "";
+      if (data.length === 0) {
+        list.innerHTML = "<p>No surprise pitches yet.</p>";
+        return;
+      }
+      data.forEach(item => {
+        const el = document.createElement("div");
+        el.className = "card";
+        el.innerHTML = `
+          <p><strong>Creator:</strong> ${item.creator_id}</p>
+          <p>${item.description || "No message"}</p>
+          <video controls width="100%" src="${item.video_url}" style="border-radius:12px; margin-top:0.5rem;"></video>
+        `;
+        list.appendChild(el);
+      });
+    }
+
+    document.addEventListener("DOMContentLoaded", () => {
+      loadCampaigns();
+      loadSurprisePitches();
+    });
   </script>
 </body>
 </html>
