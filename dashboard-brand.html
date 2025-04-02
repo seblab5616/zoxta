@@ -1,189 +1,97 @@
-
 <!DOCTYPE html>
 <html lang="en">
 <head>
   <meta charset="UTF-8" />
-  <base href="./">
-  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
   <title>Zoxta — Brand Dashboard</title>
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
   <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;600&display=swap" rel="stylesheet" />
   <style>
-    body { font-family: 'Inter', sans-serif; margin: 0; background: #f1f5f9; color: #1a1a1a; }
-    header { background: #000; color: #fff; padding: 1rem 2rem; font-size: 1.4rem; font-weight: bold; }
-    nav { background:#fff; border-bottom:1px solid #ddd; padding:0.8rem 2rem; display:flex; gap:1.5rem; font-weight:600; }
-    .container { max-width: 900px; margin: 2rem auto; padding: 0 1rem; }
-    .section { margin-bottom: 2rem; }
-    .offer-card {
-      background: white;
-      border-radius: 12px;
-      padding: 1rem;
-      box-shadow: 0 2px 10px rgba(0,0,0,0.05);
-      margin-bottom: 1rem;
+    body {
+      font-family: 'Inter', sans-serif;
+      background: #f5f8fa;
+      margin: 0;
+      padding: 0;
     }
-    .offer-card h3 { margin-top: 0; }
-    .offer-card p { margin: 0.3rem 0; }
-    .apply-btn {
-      background: #4dbf4d;
-      color: white;
+    nav {
+      background: #fff;
+      border-bottom: 1px solid #ddd;
+      padding: 0.8rem 2rem;
+      display: flex;
+      gap: 1.8rem;
       font-weight: 600;
-      border: none;
-      padding: 0.5rem 1rem;
-      border-radius: 8px;
-      cursor: pointer;
-      margin-top: 0.5rem;
+      font-size: 15px;
     }
-    .profile-box {
+    nav a {
+      color: #4a4a4a;
+      text-decoration: none;
+      display: flex;
+      align-items: center;
+      gap: 0.4rem;
+    }
+    .container {
+      padding: 2rem;
+    }
+    .card {
       background: #fff;
       border-radius: 12px;
-      padding: 1rem;
+      padding: 1.5rem;
+      box-shadow: 0 4px 12px rgba(0,0,0,0.05);
       margin-bottom: 2rem;
-      box-shadow: 0 2px 8px rgba(0,0,0,0.06);
+    }
+    h1 {
+      margin-bottom: 1rem;
     }
     .section-title {
       font-size: 1.2rem;
-      font-weight: 600;
-      margin-bottom: 1rem;
-    }
-    .edit-link {
-      display: inline-block;
-      margin-top: 0.5rem;
-      background: #4dbf4d;
-      color: white;
-      padding: 0.4rem 0.8rem;
-      border-radius: 8px;
-      text-decoration: none;
-      font-weight: 600;
+      margin-top: 2rem;
     }
   </style>
 </head>
 <body>
-  <header>Zoxta — Brand Dashboard</header>
-  
-  <nav style="background:#fff; border-bottom:1px solid #ddd; padding:0.7rem 2rem; display:flex; gap:1.8rem; font-weight:600; font-size: 15px;">
-    <a href="dashboard-brand.html" style="color:#4a4a4a; text-decoration:none; display:flex; align-items:center; gap:0.3rem;">
-      📂 <span>Offers</span>
-    </a>
-    <a href="edit-profile.html" style="color:#4a4a4a; text-decoration:none; display:flex; align-items:center; gap:0.3rem;">
-      📄 <span>Profile</span>
-    </a>
-    <a href="surprise.html" style="color:#4a4a4a; text-decoration:none; display:flex; align-items:center; gap:0.3rem;">
-      🎥 <span>SurpriseMe</span>
-    </a>
-    <a href="#" style="color:#4a4a4a; text-decoration:none; display:flex; align-items:center; gap:0.3rem;">
-      💬 <span>Messages</span>
-    </a>
-    <a href="#" style="color:#4a4a4a; text-decoration:none; display:flex; align-items:center; gap:0.3rem;">
-      💳 <span>Payments</span>
-    </a>
+
+  <nav>
+    <a href="dashboard-brand.html">📂 <span>Offers</span></a>
+    <a href="edit-profile.html">📄 <span>Profile</span></a>
+    <a href="surprise.html">🎥 <span>SurpriseMe</span></a>
+    <a href="#">💬 <span>Messages</span></a>
+    <a href="#">💳 <span>Payments</span></a>
   </nav>
 
   <div class="container">
-    <div class="profile-box">
-      <strong>Welcome, Brand!</strong><br />
-      Your ID: <span id="creatorId">loading...</span><br/>
-      <a href="edit-profile.html" class="edit-link">Edit Profile</a>
+    <div class="card">
+      <p><strong>Welcome, <span id="userName">Brand</span>!</strong></p>
+      <p>Your ID: <span id="userId">loading...</span></p>
     </div>
 
-    <div class="section">
-      <div class="section-title">Available Campaigns</div>
-      <div id="campaigns">Loading...</div>
-    </div>
-
-    <div class="section">
-      <div class="section-title">Surprise Pitches</div>
-      <div id="surpriseList">Loading...</div>
-    </div>
+    <h2 class="section-title">Your Campaigns</h2>
+    <div id="campaignList">Loading campaigns...</div>
   </div>
 
   <script>
-    const API_URL = "https://sheetdb.io/api/v1/yevywzm4at1j6";
-    let CREATOR_ID = "";
     let CURRENT_USER = null;
-    let REDIRECTED = false;
 
     try {
       const stored = localStorage.getItem("zoxtaUser");
       if (stored) {
         CURRENT_USER = JSON.parse(stored);
-        if ((CURRENT_USER.role || "").toLowerCase() !== "creator") {
+        console.log("Loaded user:", CURRENT_USER);
+
+        if ((CURRENT_USER.role || "").toLowerCase() !== "brand") {
+          console.warn("User is not a brand. Redirecting...");
           window.location.href = "login.html";
+        } else {
+          document.getElementById("userName").textContent = CURRENT_USER.name || "Brand";
+          document.getElementById("userId").textContent = CURRENT_USER.id || "unknown";
         }
-        CREATOR_ID = CURRENT_USER.id;
-        document.getElementById("creatorId").textContent = CREATOR_ID;
-      } else if (!REDIRECTED) {
+      } else {
+        console.warn("No user found in localStorage. Redirecting...");
         window.location.href = "login.html";
       }
     } catch (err) {
-      console.error("Login check failed", err);
+      console.error("Error parsing user from localStorage", err);
       window.location.href = "login.html";
     }
-
-    async function loadCampaigns() {
-      const res = await fetch(API_URL + "?status=approved");
-      const data = await res.json();
-      const list = document.getElementById("offersList");
-      list.innerHTML = "";
-      if (data.length === 0) {
-        list.innerHTML = "<p>No approved offers available.</p>";
-        return;
-      }
-      data.forEach(offer => {
-        const applied = offer.creator_id && offer.creator_id.split(",").includes(CREATOR_ID);
-        if (applied) return;
-        const currentApplicants = offer.creator_id ? offer.creator_id.split(",").length : 0;
-        const maxSlots = offer.slots || "∞";
-        if (offer.slots && currentApplicants >= parseInt(offer.slots)) return;
-
-        const el = document.createElement("div");
-        el.className = "offer-card";
-        el.innerHTML = `
-          <h3>${offer.title}</h3>
-          <p>${offer.description}</p>
-          <p><strong>Payment:</strong> $${offer.price || "—"}</p>
-          <p><strong>Slots:</strong> ${maxSlots}</p>
-          <button class="apply-btn" onclick="applyToOffer('${offer.id}', '${offer.creator_id || ""}')">Apply</button>
-        `;
-        list.appendChild(el);
-      });
-    }
-
-    async function loadMyResponses() {
-      const res = await fetch(API_URL + "?creator_id=" + CREATOR_ID);
-      const data = await res.json();
-      const list = document.getElementById("myCampaigns");
-      list.innerHTML = "";
-      if (data.length === 0) {
-        list.innerHTML = "<p>No responses yet.</p>";
-        return;
-      }
-      data.forEach(offer => {
-        const el = document.createElement("div");
-        el.className = "offer-card";
-        el.innerHTML = `
-          <h3>${offer.title}</h3>
-          <p>${offer.description}</p>
-          <p><strong>Status:</strong> ${offer.status}</p>
-        `;
-        list.appendChild(el);
-      });
-    }
-
-    async function applyToOffer(id, currentIds) {
-      const updated = currentIds ? currentIds.split(",") : [];
-      updated.push(CREATOR_ID);
-      await fetch(API_URL + "/id/" + id, {
-        method: "PATCH",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ data: { creator_id: updated.join(",") } })
-      });
-      loadCampaigns();
-      loadSurprisePitches();
-    }
-
-    document.addEventListener("DOMContentLoaded", () => {
-      loadCampaigns();
-      loadSurprisePitches();
-    });
   </script>
+
 </body>
 </html>
