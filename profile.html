@@ -116,6 +116,38 @@
     
         });
     }
-  </script>
+  
+    const user = JSON.parse(localStorage.getItem("zoxtaUser") || "{}");
+    const applyBtn = document.getElementById("applyBtn");
+
+    applyBtn.addEventListener("click", async () => {
+      if (!user.id || user.role !== "brand") {
+        alert("Only logged-in brands can apply.");
+        return;
+      }
+
+      const payload = {
+        data: {
+          id: String(Date.now()),
+          type: "direct_offer",
+          brand_id: user.id,
+          creator_id: profileId,
+          title: "Direct Offer",
+          description: "Sent via profile",
+          status: "pending"
+        }
+      };
+
+      await fetch("https://sheetdb.io/api/v1/yevywzm4at1j6", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify(payload)
+      });
+
+      applyBtn.innerText = "Applied!";
+      applyBtn.disabled = true;
+    });
+    </script>
+    
 </body>
 </html>
