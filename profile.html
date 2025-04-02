@@ -1,0 +1,121 @@
+
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <base href="./" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+  <title>Zoxta — Public Profile</title>
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;600&display=swap" rel="stylesheet" />
+  <style>
+    body {
+      font-family: 'Inter', sans-serif;
+      background: #f9fafb;
+      color: #1a1a1a;
+      margin: 0;
+      padding: 2rem;
+    }
+    .profile-container {
+      max-width: 600px;
+      margin: 0 auto;
+      background: white;
+      padding: 2rem;
+      border-radius: 16px;
+      box-shadow: 0 4px 20px rgba(0,0,0,0.05);
+      text-align: center;
+    }
+    .avatar {
+      width: 120px;
+      height: 120px;
+      border-radius: 50%;
+      object-fit: cover;
+      margin-bottom: 1rem;
+    }
+    h2 {
+      margin: 0.3rem 0;
+    }
+    p {
+      margin: 0.4rem 0;
+    }
+    .socials a {
+      margin: 0 0.4rem;
+      text-decoration: none;
+      font-weight: 600;
+      color: #4dbf4d;
+    }
+    .label {
+      font-size: 0.85rem;
+      text-transform: uppercase;
+      letter-spacing: 1px;
+      color: #888;
+      margin-top: 1rem;
+    }
+  </style>
+</head>
+<body>
+  <div class="profile-container">
+    <img id="avatar" class="avatar" src="" alt="Avatar" style="display:none"/>
+    <h2 id="name">Loading...</h2>
+    <p id="description"></p>
+    <div class="socials" id="socials">
+    </div>
+    <div class="label" id="roleLabel"></div>
+    <button id="applyBtn" style="margin-top:1.5rem; background:#4dbf4d; color:white; border:none; padding:0.6rem 1.2rem; border-radius:8px; font-weight:600; display:none; cursor:pointer;">Apply</button>
+    <p style="margin-top:1rem; font-size:0.9rem;">🔗 <a id="shareLink" href="#" target="_blank">Copy profile link</a></p>
+    
+  </div>
+
+  <script>
+    const API = "https://sheetdb.io/api/v1/ua6o4sykaiz50";
+    const urlParams = new URLSearchParams(window.location.search);
+    const profileId = urlParams.get("id");
+
+    if (!profileId) {
+      document.body.innerHTML = "<p style='text-align:center;'>Missing ID in URL.</p>";
+    } else {
+      fetch(API + "/id/" + profileId)
+        .then(res => res.json())
+        .then(data => {
+          const user = data.data;
+          document.getElementById("name").textContent = user.name || "Unnamed";
+          document.getElementById("description").textContent = user.description || "";
+
+          if (user.avatar) {
+            const img = document.getElementById("avatar");
+            img.src = user.avatar;
+            img.style.display = "block";
+          }
+
+          const socials = document.getElementById("socials");
+          ["instagram", "tiktok", "youtube", "twitch"].forEach(platform => {
+            if (user[platform]) {
+              const a = document.createElement("a");
+              a.href = user[platform];
+              a.target = "_blank";
+              a.textContent = platform.charAt(0).toUpperCase() + platform.slice(1);
+              socials.appendChild(a);
+            }
+          });
+
+          
+    const isCreator = user.role !== "brand";
+    document.getElementById("roleLabel").textContent = isCreator ? "Creator Profile" : "Brand Profile";
+    if (isCreator) {
+      document.getElementById("applyBtn").style.display = "inline-block";
+    }
+    const profileUrl = window.location.href;
+    const link = document.getElementById("shareLink");
+    link.href = profileUrl;
+    link.addEventListener("click", function(e) {
+      e.preventDefault();
+      navigator.clipboard.writeText(profileUrl).then(() => {
+        link.innerText = "Link copied!";
+        setTimeout(() => link.innerText = "Copy profile link", 2000);
+      });
+    });
+    
+        });
+    }
+  </script>
+</body>
+</html>
