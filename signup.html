@@ -1,52 +1,164 @@
 
 <!DOCTYPE html>
-<html>
+<html lang="en">
 <head>
-  <title>Sign Up — Zoxta</title>
-  <script type="module" src="firebase.js"></script>
+  <meta charset="UTF-8" />
+  <title>Register — Zoxta</title>
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <link rel="icon" href="https://res.cloudinary.com/dff5ry9xi/image/upload/v1714598872/zoxta-logo-white.png" type="image/png" />
+  <style>
+    body {
+      margin: 0;
+      font-family: "Segoe UI", sans-serif;
+      background: linear-gradient(270deg, #a8ff78, #78ffd6, #b5fffc);
+      background-size: 600% 600%;
+      animation: gradient 10s ease infinite;
+      height: 100vh;
+      display: flex;
+      justify-content: center;
+      align-items: center;
+    }
+
+    @keyframes gradient {
+      0% {background-position: 0% 50%;}
+      50% {background-position: 100% 50%;}
+      100% {background-position: 0% 50%;}
+    }
+
+    .card {
+      background: white;
+      padding: 40px;
+      border-radius: 20px;
+      box-shadow: 0 0 30px rgba(0, 0, 0, 0.1);
+      max-width: 400px;
+      width: 100%;
+      text-align: center;
+    }
+
+    .card img {
+      width: 60px;
+      margin-bottom: 20px;
+    }
+
+    .card h2 {
+      margin-bottom: 10px;
+    }
+
+    input, select {
+      width: 100%;
+      padding: 12px;
+      margin: 8px 0;
+      border: 1px solid #ddd;
+      border-radius: 8px;
+      font-size: 16px;
+    }
+
+    button {
+      background: #38c172;
+      color: white;
+      padding: 12px;
+      border: none;
+      border-radius: 8px;
+      font-size: 16px;
+      width: 100%;
+      margin-top: 10px;
+      cursor: pointer;
+    }
+
+    button:hover {
+      background: #2fa360;
+    }
+
+    .link {
+      margin-top: 12px;
+      font-size: 14px;
+    }
+
+    .link a {
+      color: #333;
+      text-decoration: none;
+      font-weight: bold;
+    }
+
+    .error {
+      color: red;
+      margin-top: 10px;
+    }
+
+    .success {
+      color: green;
+      margin-top: 10px;
+    }
+  </style>
 </head>
 <body>
-  <h2>Register for Zoxta</h2>
-  <input type="text" id="name" placeholder="Your Name"><br>
-  <input type="email" id="email" placeholder="Email"><br>
-  <input type="password" id="password" placeholder="Password"><br>
-  <select id="role">
-    <option value="creator">Creator</option>
-    <option value="brand">Brand</option>
-  </select><br>
-  <button onclick="signup()">Sign Up</button>
+  <div class="card">
+    <img src="https://res.cloudinary.com/dff5ry9xi/image/upload/v1714598872/zoxta-logo-white.png" alt="Zoxta Logo" />
+    <h2>Register for Zoxta</h2>
+    <input type="text" id="name" placeholder="Your Name" />
+    <input type="email" id="email" placeholder="Email" />
+    <input type="password" id="password" placeholder="Password" />
+    <select id="role">
+      <option value="creator">Creator</option>
+      <option value="brand">Brand</option>
+    </select>
+    <button onclick="signup()">Sign Up</button>
+    <div class="link">Already have an account? <a href="login.html">Login</a></div>
+    <div id="message" class="error"></div>
+  </div>
 
   <script type="module">
-    import { auth, db } from './firebase.js';
-    import { createUserWithEmailAndPassword } from 'https://www.gstatic.com/firebasejs/10.11.0/firebase-auth.js';
-    import { doc, setDoc } from 'https://www.gstatic.com/firebasejs/10.11.0/firebase-firestore.js';
+    import { initializeApp } from "https://www.gstatic.com/firebasejs/9.6.1/firebase-app.js";
+    import { getAuth, createUserWithEmailAndPassword } from "https://www.gstatic.com/firebasejs/9.6.1/firebase-auth.js";
+    import { getFirestore, doc, setDoc } from "https://www.gstatic.com/firebasejs/9.6.1/firebase-firestore.js";
+
+    const firebaseConfig = {
+      apiKey: "AIzaSyBYrJRPAtvlWqZyn13_O75ZEeW3Xii5Nw8",
+      authDomain: "zoxta-cf336.firebaseapp.com",
+      projectId: "zoxta-cf336",
+      storageBucket: "zoxta-cf336.appspot.com",
+      messagingSenderId: "170053701235",
+      appId: "1:170053701235:web:2b61745dd5e5ef5f226406"
+    };
+
+    const app = initializeApp(firebaseConfig);
+    const auth = getAuth(app);
+    const db = getFirestore(app);
 
     async function signup() {
-      const name = document.getElementById('name').value.trim();
-      const email = document.getElementById('email').value.trim();
-      const password = document.getElementById('password').value.trim();
-      const role = document.getElementById('role').value;
+      const name = document.getElementById("name").value.trim();
+      const email = document.getElementById("email").value.trim();
+      const password = document.getElementById("password").value;
+      const role = document.getElementById("role").value;
+      const message = document.getElementById("message");
+
+      message.textContent = "";
 
       try {
         const userCredential = await createUserWithEmailAndPassword(auth, email, password);
-        const user = userCredential.user;
+        const uid = userCredential.user.uid;
 
-        // Firestore user data
-        await setDoc(doc(db, "users", user.uid), {
-          name: name,
-          email: email,
-          role: role,
-          createdAt: new Date().toISOString()
+        await setDoc(doc(db, "users", uid), {
+          name,
+          email,
+          role,
+          createdAt: new Date()
         });
 
-        localStorage.setItem("zoxtaUser", JSON.stringify(user));
-        window.location.href = role === "creator" ? "dashboard-creator.html" : "dashboard-brand.html";
+        message.className = "success";
+        message.textContent = "Registered! Redirecting...";
+        setTimeout(() => {
+          window.location.href = "login.html";
+        }, 1500);
       } catch (error) {
-        alert("Signup failed: " + error.message);
+        message.className = "error";
+        if (error.code === "auth/email-already-in-use") {
+          message.textContent = "This email is already registered.";
+        } else {
+          message.textContent = error.message;
+        }
       }
     }
-
-    window.signup = signup;
   </script>
 </body>
 </html>
