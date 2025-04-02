@@ -87,17 +87,22 @@
     const API_URL = "https://sheetdb.io/api/v1/yevywzm4at1j6";
     let CREATOR_ID = "";
     let CURRENT_USER = null;
+    let REDIRECTED = false;
 
     try {
       const stored = localStorage.getItem("zoxtaUser");
       if (stored) {
         CURRENT_USER = JSON.parse(stored);
-        if ((CURRENT_USER.role || "").toLowerCase() !== "creator") {
+        if (!CURRENT_USER || !CURRENT_USER.id || (CURRENT_USER.role || "").toLowerCase() !== "creator") {
+      console.warn("Invalid user or role:", CURRENT_USER);
+      REDIRECTED = true;
+      window.location.href = "login.html";
+    }
           window.location.href = "login.html";
         }
         CREATOR_ID = CURRENT_USER.id;
         document.getElementById("creatorId").textContent = CREATOR_ID;
-      } else {
+      } else if (!REDIRECTED) {
         window.location.href = "login.html";
       }
     } catch (err) {

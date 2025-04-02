@@ -87,6 +87,7 @@
     const API_URL = "https://sheetdb.io/api/v1/yevywzm4at1j6";
     let CREATOR_ID = "";
     let CURRENT_USER = null;
+    let REDIRECTED = false;
 
     try {
       const stored = localStorage.getItem("zoxtaUser");
@@ -97,7 +98,7 @@
         }
         CREATOR_ID = CURRENT_USER.id;
         document.getElementById("creatorId").textContent = CREATOR_ID;
-      } else {
+      } else if (!REDIRECTED) {
         window.location.href = "login.html";
       }
     } catch (err) {
