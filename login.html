@@ -72,13 +72,9 @@
       const error = document.getElementById("errorMsg");
       error.textContent = "";
 
-      
-
       try {
         const res = await fetch("https://sheetdb.io/api/v1/ua6o4sykaiz50?email=" + encodeURIComponent(email));
         const data = await res.json();
-        
-
         const matchedUser = data.find(user => user.password === password);
         if (!matchedUser) {
           error.textContent = "Invalid email or password.";
@@ -87,7 +83,7 @@
 
         localStorage.setItem("zoxtaUser", JSON.stringify(matchedUser));
 
-        if (matchedUser.role === "brand") {
+        if ((matchedUser.role || "").toLowerCase() === "brand") {
           window.location.href = "dashboard-brand.html";
         } else {
           window.location.href = "dashboard-creator.html";

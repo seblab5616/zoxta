@@ -1,3 +1,4 @@
+
 <!DOCTYPE html>
 <html lang="en">
 <head>
@@ -69,13 +70,11 @@
 
   <script>
     let CURRENT_USER = null;
-
     try {
       const stored = localStorage.getItem("zoxtaUser");
       if (stored) {
         CURRENT_USER = JSON.parse(stored);
         console.log("Loaded user:", CURRENT_USER);
-
         if ((CURRENT_USER.role || "").toLowerCase() !== "brand") {
           console.warn("User is not a brand. Redirecting...");
           window.location.href = "login.html";
