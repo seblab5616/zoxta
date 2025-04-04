@@ -1,53 +1,88 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
-  <meta charset="UTF-8"/>
+  <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
   <title>Register — Zoxta</title>
-  <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/@picocss/pico@1/css/pico.min.css"/>
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;600&display=swap" rel="stylesheet">
   <style>
     body {
-      background: #a4f5ef;
+      margin: 0;
+      font-family: 'Inter', sans-serif;
+      background: linear-gradient(135deg, #a0f0e0, #c6f7ff);
       display: flex;
-      justify-content: center;
       align-items: center;
+      justify-content: center;
       height: 100vh;
     }
-    main {
+    .card {
       background: white;
       padding: 2rem;
-      border-radius: 1.25rem;
-      box-shadow: 0 0 25px rgba(0, 0, 0, 0.1);
-      max-width: 400px;
+      border-radius: 16px;
+      box-shadow: 0 10px 25px rgba(0,0,0,0.1);
       width: 100%;
+      max-width: 400px;
+      text-align: center;
     }
-    .logo {
-      display: block;
-      margin: 0 auto 1rem;
-      width: 100px;
+    .card h2 {
+      margin-bottom: 1rem;
+      font-weight: 600;
+    }
+    input, select {
+      width: 100%;
+      padding: 12px;
+      margin: 8px 0;
+      border: 1px solid #ccc;
+      border-radius: 8px;
+      font-size: 1rem;
+    }
+    button {
+      width: 100%;
+      padding: 12px;
+      background: #00bfa6;
+      border: none;
+      color: white;
+      font-size: 1rem;
+      font-weight: 600;
+      border-radius: 8px;
+      cursor: pointer;
+      margin-top: 1rem;
+    }
+    button:hover {
+      background: #009f8c;
+    }
+    .link {
+      margin-top: 1rem;
+      font-size: 0.9rem;
+    }
+    .link a {
+      color: #00bfa6;
+      text-decoration: none;
+      font-weight: 600;
     }
   </style>
 </head>
 <body>
-  <main>
-    <img src="zoxta-logo-white.png" alt="Zoxta Logo" class="logo" onerror="this.style.display='none'" />
+  <div class="card">
     <h2>Register for Zoxta</h2>
-
-    <input type="text" id="name" placeholder="Your Name" required />
-    <input type="email" id="email" placeholder="Email" required />
-    <input type="password" id="password" placeholder="Password" required />
+    <input type="text" id="name" placeholder="Your Name" />
+    <input type="email" id="email" placeholder="Email" />
+    <input type="password" id="password" placeholder="Password" />
     <select id="role">
       <option value="Creator">Creator</option>
       <option value="Brand">Brand</option>
     </select>
-    <button id="signup-btn">Sign Up</button>
-    <small>Already have an account? <a href="login.html">Login</a></small>
-  </main>
+    <button onclick="signup()">Sign Up</button>
+    <div class="link">
+      Already have an account? <a href="login.html">Login</a>
+    </div>
+  </div>
 
+  <!-- Firebase -->
   <script type="module">
-    import { initializeApp } from "https://www.gstatic.com/firebasejs/10.8.1/firebase-app.js";
-    import { getAuth, createUserWithEmailAndPassword } from "https://www.gstatic.com/firebasejs/10.8.1/firebase-auth.js";
-    import { getFirestore, setDoc, doc } from "https://www.gstatic.com/firebasejs/10.8.1/firebase-firestore.js";
+    import { initializeApp } from "https://www.gstatic.com/firebasejs/10.11.0/firebase-app.js";
+    import { getAuth, createUserWithEmailAndPassword } from "https://www.gstatic.com/firebasejs/10.11.0/firebase-auth.js";
+    import { getFirestore, doc, setDoc } from "https://www.gstatic.com/firebasejs/10.11.0/firebase-firestore.js";
 
     const firebaseConfig = {
       apiKey: "AIzaSyBYrJRPAtvlWqZyn13_O75ZEeW3Xii5Nw8",
@@ -59,17 +94,17 @@
     };
 
     const app = initializeApp(firebaseConfig);
-    const auth = getAuth(app);
-    const db = getFirestore(app);
+    const auth = getAuth();
+    const db = getFirestore();
 
-    document.getElementById("signup-btn").addEventListener("click", async () => {
+    window.signup = async function () {
       const name = document.getElementById("name").value.trim();
       const email = document.getElementById("email").value.trim();
       const password = document.getElementById("password").value;
       const role = document.getElementById("role").value;
 
       if (!name || !email || !password) {
-        alert("Please fill in all fields.");
+        alert("Please fill all fields.");
         return;
       }
 
@@ -78,19 +113,19 @@
         const user = userCredential.user;
 
         await setDoc(doc(db, "users", user.uid), {
+          id: user.uid,
           name,
           email,
-          role,
-          createdAt: new Date().toISOString()
+          role
         });
 
-        alert("Registration successful! Redirecting...");
+        alert("Registered successfully!");
         window.location.href = "login.html";
       } catch (error) {
         alert("Signup failed: " + error.message);
         console.error(error);
       }
-    });
+    }
   </script>
 </body>
 </html>
