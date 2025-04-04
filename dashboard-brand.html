@@ -58,6 +58,23 @@
     .card p {
       margin: 0.5rem 0 0 0;
     }
+    input, textarea, select {
+      width: 100%;
+      margin: 6px 0 12px;
+      padding: 10px;
+      border-radius: 8px;
+      border: 1px solid #ccc;
+      font-family: inherit;
+    }
+    button {
+      background: #00bfa6;
+      border: none;
+      color: white;
+      font-weight: bold;
+      padding: 10px 20px;
+      border-radius: 8px;
+      cursor: pointer;
+    }
   </style>
 </head>
 <body>
@@ -68,8 +85,8 @@
   <nav>
     <a href="#">Campaigns</a>
     <a href="#">Applications</a>
-    <a href="#">Profile</a>
-    <a href="#">Payments</a>
+    <a href="#profile">Profile</a>
+    <a href="#create">Create Campaign</a>
     <a href="#" onclick="logout()">Logout</a>
   </nav>
   <div class="container">
@@ -87,12 +104,31 @@
       <h2>Applications</h2>
       <div id="applications">Loading...</div>
     </div>
+
+    <div class="card" id="profile">
+      <h2>Your Profile</h2>
+      <p><strong>Name:</strong> <span id="profileName"></span></p>
+      <p><strong>Email:</strong> <span id="profileEmail"></span></p>
+      <p><strong>Description:</strong> <span id="profileDescription">—</span></p>
+      <p><strong>Instagram:</strong> <span id="profileInstagram">—</span></p>
+      <p><strong>Website:</strong> <span id="profileWebsite">—</span></p>
+    </div>
+
+    <div class="card" id="create">
+      <h2>Create New Campaign</h2>
+      <input type="text" id="title" placeholder="Campaign Title" />
+      <textarea id="description" placeholder="Campaign Description"></textarea>
+      <input type="number" id="price" placeholder="Price (USD)" />
+      <input type="number" id="needed" placeholder="Number of Influencers Needed" />
+      <label><input type="checkbox" id="openOffer" /> Open to all creators</label><br><br>
+      <button onclick="submitCampaign()">Submit</button>
+    </div>
   </div>
 
   <script type="module">
     import { initializeApp } from "https://www.gstatic.com/firebasejs/10.11.0/firebase-app.js";
     import { getAuth, onAuthStateChanged, signOut } from "https://www.gstatic.com/firebasejs/10.11.0/firebase-auth.js";
-    import { getFirestore, doc, getDoc } from "https://www.gstatic.com/firebasejs/10.11.0/firebase-firestore.js";
+    import { getFirestore, doc, getDoc, addDoc, collection } from "https://www.gstatic.com/firebasejs/10.11.0/firebase-firestore.js";
 
     const firebaseConfig = {
       apiKey: "AIzaSyBYrJRPAtvlWqZyn13_O75ZEeW3Xii5Nw8",
@@ -110,9 +146,17 @@
     const userNameEl = document.getElementById("userName");
     const displayNameEl = document.getElementById("displayName");
     const userIdEl = document.getElementById("userId");
+    const profileNameEl = document.getElementById("profileName");
+    const profileEmailEl = document.getElementById("profileEmail");
+    const profileDescriptionEl = document.getElementById("profileDescription");
+    const profileInstagramEl = document.getElementById("profileInstagram");
+    const profileWebsiteEl = document.getElementById("profileWebsite");
+
+    let currentUserId = null;
 
     onAuthStateChanged(auth, async (user) => {
       if (user) {
+        currentUserId = user.uid;
         const userRef = doc(db, "users", user.uid);
         const snap = await getDoc(userRef);
         if (snap.exists()) {
@@ -120,6 +164,11 @@
           userNameEl.textContent = data.name;
           displayNameEl.textContent = data.name;
           userIdEl.textContent = user.uid;
+          profileNameEl.textContent = data.name || "—";
+          profileEmailEl.textContent = data.email || "—";
+          profileDescriptionEl.textContent = data.description || "—";
+          profileInstagramEl.textContent = data.instagram || "—";
+          profileWebsiteEl.textContent = data.website || "—";
         }
       } else {
         window.location.href = "login.html";
@@ -129,6 +178,40 @@
     window.logout = async function () {
       await signOut(auth);
       window.location.href = "login.html";
+    }
+
+    window.submitCampaign = async function () {
+      const title = document.getElementById("title").value.trim();
+      const description = document.getElementById("description").value.trim();
+      const price = document.getElementById("price").value;
+      const needed = document.getElementById("needed").value;
+      const openOffer = document.getElementById("openOffer").checked;
+
+      if (!title || !description || !price || !needed) {
+        alert("Please fill in all fields.");
+        return;
+      }
+
+      try {
+        await addDoc(collection(db, "campaigns"), {
+          title,
+          description,
+          price: parseFloat(price),
+          needed: parseInt(needed),
+          open: openOffer,
+          brandId: currentUserId,
+          createdAt: new Date().toISOString()
+        });
+        alert("Campaign created!");
+        document.getElementById("title").value = "";
+        document.getElementById("description").value = "";
+        document.getElementById("price").value = "";
+        document.getElementById("needed").value = "";
+        document.getElementById("openOffer").checked = false;
+      } catch (error) {
+        console.error("Error creating campaign:", error);
+        alert("Failed to create campaign.");
+      }
     }
   </script>
 </body>
