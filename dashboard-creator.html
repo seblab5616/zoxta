@@ -3,7 +3,7 @@
 <head>
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <title>Zoxta Brand Dashboard</title>
+  <title>Zoxta Creator Dashboard</title>
   <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;600&display=swap" rel="stylesheet">
   <style>
     body {
@@ -62,13 +62,13 @@
 </head>
 <body>
   <header>
-    <h1>Zoxta Brand Dashboard</h1>
+    <h1>Zoxta Creator Dashboard</h1>
     <span id="userName"></span>
   </header>
   <nav>
-    <a href="#">Campaigns</a>
-    <a href="#">Applications</a>
+    <a href="#">Offers</a>
     <a href="#">Profile</a>
+    <a href="#">Messages</a>
     <a href="#">Payments</a>
     <a href="#" onclick="logout()">Logout</a>
   </nav>
@@ -79,13 +79,24 @@
     </div>
 
     <div class="card">
-      <h2>Your Campaigns</h2>
-      <div id="campaigns">Loading...</div>
+      <h2>Available Offers</h2>
+      <div id="offers">Loading...</div>
     </div>
 
     <div class="card">
-      <h2>Applications</h2>
-      <div id="applications">Loading...</div>
+      <h2>My Responses</h2>
+      <div id="responses">Loading...</div>
+    </div>
+
+    <div class="card">
+      <h2>Your Profile</h2>
+      <p><strong>Name:</strong> <span id="profileName">—</span></p>
+      <p><strong>Email:</strong> <span id="profileEmail">—</span></p>
+      <p><strong>Description:</strong> <span id="profileDescription">—</span></p>
+      <p><strong>Instagram:</strong> <span id="profileInstagram">—</span></p>
+      <p><strong>YouTube:</strong> <span id="profileYoutube">—</span></p>
+      <p><strong>TikTok:</strong> <span id="profileTiktok">—</span></p>
+      <p><strong>Twitch:</strong> <span id="profileTwitch">—</span></p>
     </div>
   </div>
 
@@ -110,6 +121,13 @@
     const userNameEl = document.getElementById("userName");
     const displayNameEl = document.getElementById("displayName");
     const userIdEl = document.getElementById("userId");
+    const profileNameEl = document.getElementById("profileName");
+    const profileEmailEl = document.getElementById("profileEmail");
+    const profileDescriptionEl = document.getElementById("profileDescription");
+    const profileInstagramEl = document.getElementById("profileInstagram");
+    const profileYoutubeEl = document.getElementById("profileYoutube");
+    const profileTiktokEl = document.getElementById("profileTiktok");
+    const profileTwitchEl = document.getElementById("profileTwitch");
 
     onAuthStateChanged(auth, async (user) => {
       if (user) {
@@ -120,6 +138,13 @@
           userNameEl.textContent = data.name;
           displayNameEl.textContent = data.name;
           userIdEl.textContent = data.id;
+          profileNameEl.textContent = data.name || "—";
+          profileEmailEl.textContent = data.email || "—";
+          profileDescriptionEl.textContent = data.description || "—";
+          profileInstagramEl.textContent = data.instagram || "—";
+          profileYoutubeEl.textContent = data.youtube || "—";
+          profileTiktokEl.textContent = data.tiktok || "—";
+          profileTwitchEl.textContent = data.twitch || "—";
         }
       } else {
         window.location.href = "login.html";
@@ -133,4 +158,3 @@
   </script>
 </body>
 </html>
-
