@@ -24,6 +24,21 @@
       margin: 0;
       font-size: 1.5rem;
     }
+    nav {
+      background: #e3faf7;
+      display: flex;
+      gap: 1rem;
+      padding: 0.75rem 2rem;
+      border-bottom: 1px solid #d4f2eb;
+    }
+    nav a {
+      text-decoration: none;
+      color: #007b6e;
+      font-weight: 600;
+    }
+    nav a:hover {
+      text-decoration: underline;
+    }
     .container {
       padding: 2rem;
       max-width: 900px;
@@ -50,6 +65,13 @@
     <h1>Zoxta Brand Dashboard</h1>
     <span id="userName"></span>
   </header>
+  <nav>
+    <a href="#">Campaigns</a>
+    <a href="#">Applications</a>
+    <a href="#">Profile</a>
+    <a href="#">Payments</a>
+    <a href="#" onclick="logout()">Logout</a>
+  </nav>
   <div class="container">
     <div class="card">
       <h2>Welcome, <span id="displayName">...</span></h2>
@@ -69,7 +91,7 @@
 
   <script type="module">
     import { initializeApp } from "https://www.gstatic.com/firebasejs/10.11.0/firebase-app.js";
-    import { getAuth, onAuthStateChanged } from "https://www.gstatic.com/firebasejs/10.11.0/firebase-auth.js";
+    import { getAuth, onAuthStateChanged, signOut } from "https://www.gstatic.com/firebasejs/10.11.0/firebase-auth.js";
     import { getFirestore, doc, getDoc } from "https://www.gstatic.com/firebasejs/10.11.0/firebase-firestore.js";
 
     const firebaseConfig = {
@@ -97,12 +119,17 @@
           const data = snap.data();
           userNameEl.textContent = data.name;
           displayNameEl.textContent = data.name;
-          userIdEl.textContent = data.id;
+          userIdEl.textContent = user.uid;
         }
       } else {
         window.location.href = "login.html";
       }
     });
+
+    window.logout = async function () {
+      await signOut(auth);
+      window.location.href = "login.html";
+    }
   </script>
 </body>
 </html>
