@@ -1,21 +1,108 @@
-
 <!DOCTYPE html>
 <html lang="en">
 <head>
   <meta charset="UTF-8" />
-  <title>Zoxta — Creator Dashboard</title>
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Zoxta Creator Dashboard</title>
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;600&display=swap" rel="stylesheet">
+  <style>
+    body {
+      margin: 0;
+      font-family: 'Inter', sans-serif;
+      background: #f3f7fa;
+      color: #222;
+    }
+    header {
+      background: #00bfa6;
+      color: white;
+      padding: 1rem 2rem;
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+    }
+    header h1 {
+      margin: 0;
+      font-size: 1.5rem;
+    }
+    .container {
+      padding: 2rem;
+      max-width: 900px;
+      margin: auto;
+    }
+    .card {
+      background: white;
+      padding: 1.5rem;
+      margin-bottom: 1rem;
+      border-radius: 12px;
+      box-shadow: 0 2px 10px rgba(0,0,0,0.05);
+    }
+    .card h2 {
+      margin-top: 0;
+      font-size: 1.2rem;
+    }
+    .card p {
+      margin: 0.5rem 0 0 0;
+    }
+  </style>
 </head>
 <body>
-  <nav>
-    <a href="dashboard-creator.html">📂 Offers</a>
-    <a href="edit-profile.html">📄 Profile</a>
-    <a href="spotlight.html">📣 Spotlight</a>
-    <a href="create-spotlight.html">📝 Create Post</a>
-    <a href="surprise.html">🎥 SurpriseMe</a>
-    <a href="#">💬 Messages</a>
-    <a href="#">💳 Payments</a>
-  </nav>
-  <h2>Creator Dashboard Placeholder</h2>
+  <header>
+    <h1>Zoxta Creator Dashboard</h1>
+    <span id="userName"></span>
+  </header>
+  <div class="container">
+    <div class="card">
+      <h2>Welcome, <span id="displayName">...</span></h2>
+      <p>Your ID: <span id="userId">...</span></p>
+    </div>
+
+    <div class="card">
+      <h2>Available Offers</h2>
+      <div id="offers">Loading...</div>
+    </div>
+
+    <div class="card">
+      <h2>My Responses</h2>
+      <div id="responses">Loading...</div>
+    </div>
+  </div>
+
+  <script type="module">
+    import { initializeApp } from "https://www.gstatic.com/firebasejs/10.11.0/firebase-app.js";
+    import { getAuth, onAuthStateChanged } from "https://www.gstatic.com/firebasejs/10.11.0/firebase-auth.js";
+    import { getFirestore, doc, getDoc } from "https://www.gstatic.com/firebasejs/10.11.0/firebase-firestore.js";
+
+    const firebaseConfig = {
+      apiKey: "AIzaSyBYrJRPAtvlWqZyn13_O75ZEeW3Xii5Nw8",
+      authDomain: "zoxta-cf336.firebaseapp.com",
+      projectId: "zoxta-cf336",
+      storageBucket: "zoxta-cf336.appspot.com",
+      messagingSenderId: "170053701235",
+      appId: "1:170053701235:web:2b61745dd5e5ef5f226406"
+    };
+
+    const app = initializeApp(firebaseConfig);
+    const auth = getAuth();
+    const db = getFirestore();
+
+    const userNameEl = document.getElementById("userName");
+    const displayNameEl = document.getElementById("displayName");
+    const userIdEl = document.getElementById("userId");
+
+    onAuthStateChanged(auth, async (user) => {
+      if (user) {
+        const userRef = doc(db, "users", user.uid);
+        const snap = await getDoc(userRef);
+        if (snap.exists()) {
+          const data = snap.data();
+          userNameEl.textContent = data.name;
+          displayNameEl.textContent = data.name;
+          userIdEl.textContent = data.id;
+        }
+      } else {
+        window.location.href = "login.html";
+      }
+    });
+  </script>
 </body>
 </html>
