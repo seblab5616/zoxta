@@ -90,7 +90,7 @@
     <div id="offers" class="tab-content">
       <div class="card">
         <h2>Available Offers</h2>
-        <div id="offersList">Loading...</div>
+        <div id="offersContainer">Loading...</div>
       </div>
     </div>
 
@@ -143,7 +143,7 @@
     const profileYoutubeEl = document.getElementById("profileYoutube");
     const profileTiktokEl = document.getElementById("profileTiktok");
     const profileTwitchEl = document.getElementById("profileTwitch");
-    const offersListEl = document.getElementById("offersList");
+    const offersContainer = document.getElementById("offersContainer");
 
     onAuthStateChanged(auth, async (user) => {
       if (user) {
@@ -161,26 +161,26 @@
           profileYoutubeEl.textContent = data.youtube || "—";
           profileTiktokEl.textContent = data.tiktok || "—";
           profileTwitchEl.textContent = data.twitch || "—";
-          loadOffers();
         }
+
+        const querySnapshot = await getDocs(collection(db, "offers"));
+        let html = "";
+        querySnapshot.forEach((doc) => {
+          const offer = doc.data();
+          if (offer.status === "Approved") {
+            html += `<div class='card'>
+              <h3>${offer.title}</h3>
+              <p>${offer.description}</p>
+              <p><strong>Type:</strong> ${offer.type || "—"}</p>
+            </div>`;
+          }
+        });
+        offersContainer.innerHTML = html || "No available offers.";
+
       } else {
         window.location.href = "login.html";
       }
     });
-
-    async function loadOffers() {
-      const querySnapshot = await getDocs(collection(db, "offers"));
-      offersListEl.innerHTML = "";
-      querySnapshot.forEach((doc) => {
-        const offer = doc.data();
-        offersListEl.innerHTML += `
-          <div class="card">
-            <h3>${offer.title}</h3>
-            <p>${offer.description}</p>
-          </div>
-        `;
-      });
-    }
 
     window.logout = async function () {
       await signOut(auth);
@@ -194,4 +194,3 @@
   </script>
 </body>
 </html>
-
