@@ -1,33 +1,127 @@
-
 <!DOCTYPE html>
-<html>
+<html lang="en">
 <head>
-  <title>Zoxta Login</title>
-  <script type="module" src="firebase.js"></script>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+  <title>Login — Zoxta</title>
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;600&display=swap" rel="stylesheet">
+  <style>
+    body {
+      margin: 0;
+      font-family: 'Inter', sans-serif;
+      background: linear-gradient(135deg, #c6f7ff, #a0f0e0);
+      display: flex;
+      justify-content: center;
+      align-items: center;
+      height: 100vh;
+    }
+    .card {
+      background: white;
+      padding: 2rem;
+      border-radius: 16px;
+      box-shadow: 0 10px 25px rgba(0,0,0,0.1);
+      width: 100%;
+      max-width: 400px;
+      text-align: center;
+    }
+    .card h2 {
+      margin-bottom: 1rem;
+      font-weight: 600;
+    }
+    input {
+      width: 100%;
+      padding: 12px;
+      margin: 8px 0;
+      border: 1px solid #ccc;
+      border-radius: 8px;
+      font-size: 1rem;
+    }
+    button {
+      width: 100%;
+      padding: 12px;
+      background: #00bfa6;
+      border: none;
+      color: white;
+      font-size: 1rem;
+      font-weight: 600;
+      border-radius: 8px;
+      cursor: pointer;
+      margin-top: 1rem;
+    }
+    button:hover {
+      background: #009f8c;
+    }
+    .link {
+      margin-top: 1rem;
+      font-size: 0.9rem;
+    }
+    .link a {
+      color: #00bfa6;
+      text-decoration: none;
+      font-weight: 600;
+    }
+  </style>
 </head>
 <body>
-  <h2>Login to Zoxta</h2>
-  <input type="email" id="email" placeholder="Email"><br>
-  <input type="password" id="password" placeholder="Password"><br>
-  <button onclick="login()">Login</button>
+  <div class="card">
+    <h2>Login to Zoxta</h2>
+    <input type="email" id="email" placeholder="Email" />
+    <input type="password" id="password" placeholder="Password" />
+    <button onclick="login()">Login</button>
+    <div class="link">
+      Don’t have an account? <a href="signup.html">Sign up</a>
+    </div>
+  </div>
 
   <script type="module">
-    import { auth } from './firebase.js';
-    import { signInWithEmailAndPassword } from 'https://www.gstatic.com/firebasejs/10.11.0/firebase-auth.js';
+    import { initializeApp } from "https://www.gstatic.com/firebasejs/10.11.0/firebase-app.js";
+    import { getAuth, signInWithEmailAndPassword } from "https://www.gstatic.com/firebasejs/10.11.0/firebase-auth.js";
+    import { getFirestore, doc, getDoc } from "https://www.gstatic.com/firebasejs/10.11.0/firebase-firestore.js";
 
-    async function login() {
-      const email = document.getElementById('email').value.trim();
-      const password = document.getElementById('password').value.trim();
+    const firebaseConfig = {
+      apiKey: "AIzaSyBYrJRPAtvlWqZyn13_O75ZEeW3Xii5Nw8",
+      authDomain: "zoxta-cf336.firebaseapp.com",
+      projectId: "zoxta-cf336",
+      storageBucket: "zoxta-cf336.appspot.com",
+      messagingSenderId: "170053701235",
+      appId: "1:170053701235:web:2b61745dd5e5ef5f226406"
+    };
+
+    const app = initializeApp(firebaseConfig);
+    const auth = getAuth();
+    const db = getFirestore();
+
+    window.login = async function () {
+      const email = document.getElementById("email").value.trim();
+      const password = document.getElementById("password").value;
+
+      if (!email || !password) {
+        alert("Please enter both email and password.");
+        return;
+      }
+
       try {
         const userCredential = await signInWithEmailAndPassword(auth, email, password);
-        localStorage.setItem("zoxtaUser", JSON.stringify(userCredential.user));
-        window.location.href = "dashboard-brand.html"; // можешь поменять на проверку роли
+        const user = userCredential.user;
+        const userDoc = await getDoc(doc(db, "users", user.uid));
+
+        if (userDoc.exists()) {
+          const data = userDoc.data();
+          if (data.role === "Creator") {
+            window.location.href = "dashboard-creator.html";
+          } else if (data.role === "Brand") {
+            window.location.href = "dashboard-brand.html";
+          } else {
+            alert("Unknown user role.");
+          }
+        } else {
+          alert("User profile not found.");
+        }
       } catch (error) {
         alert("Login failed: " + error.message);
+        console.error(error);
       }
-    }
-
-    window.login = login;
+    };
   </script>
 </body>
 </html>
