@@ -1,116 +1,54 @@
-
 <!DOCTYPE html>
 <html lang="en">
 <head>
   <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
   <title>Register — Zoxta</title>
-  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <link rel="icon" href="https://res.cloudinary.com/dff5ry9xi/image/upload/v1714598872/zoxta-logo-white.png" type="image/png" />
+  <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/@picocss/pico@1/css/pico.min.css"/>
   <style>
     body {
-      margin: 0;
-      font-family: "Segoe UI", sans-serif;
-      background: linear-gradient(270deg, #a8ff78, #78ffd6, #b5fffc);
-      background-size: 600% 600%;
-      animation: gradient 10s ease infinite;
-      height: 100vh;
+      background: #a2fef2;
       display: flex;
       justify-content: center;
       align-items: center;
+      height: 100vh;
     }
-
-    @keyframes gradient {
-      0% {background-position: 0% 50%;}
-      50% {background-position: 100% 50%;}
-      100% {background-position: 0% 50%;}
-    }
-
-    .card {
+    main {
       background: white;
-      padding: 40px;
-      border-radius: 20px;
-      box-shadow: 0 0 30px rgba(0, 0, 0, 0.1);
+      padding: 2rem;
+      border-radius: 1rem;
+      box-shadow: 0 0 20px rgba(0,0,0,0.1);
       max-width: 400px;
       width: 100%;
-      text-align: center;
     }
-
-    .card img {
-      width: 60px;
-      margin-bottom: 20px;
-    }
-
-    .card h2 {
-      margin-bottom: 10px;
-    }
-
-    input, select {
-      width: 100%;
-      padding: 12px;
-      margin: 8px 0;
-      border: 1px solid #ddd;
-      border-radius: 8px;
-      font-size: 16px;
-    }
-
-    button {
-      background: #38c172;
-      color: white;
-      padding: 12px;
-      border: none;
-      border-radius: 8px;
-      font-size: 16px;
-      width: 100%;
-      margin-top: 10px;
-      cursor: pointer;
-    }
-
-    button:hover {
-      background: #2fa360;
-    }
-
-    .link {
-      margin-top: 12px;
-      font-size: 14px;
-    }
-
-    .link a {
-      color: #333;
-      text-decoration: none;
-      font-weight: bold;
-    }
-
-    .error {
-      color: red;
-      margin-top: 10px;
-    }
-
-    .success {
-      color: green;
-      margin-top: 10px;
+    .logo {
+      display: block;
+      margin: 0 auto 1rem;
+      width: 120px;
     }
   </style>
 </head>
 <body>
-  <div class="card">
-    <img src="https://res.cloudinary.com/dff5ry9xi/image/upload/v1714598872/zoxta-logo-white.png" alt="Zoxta Logo" />
+  <main>
+    <img src="zoxta-logo-white.png" alt="Zoxta Logo" class="logo" onerror="this.style.display='none'" />
     <h2>Register for Zoxta</h2>
-    <input type="text" id="name" placeholder="Your Name" />
-    <input type="email" id="email" placeholder="Email" />
-    <input type="password" id="password" placeholder="Password" />
-    <select id="role">
-      <option value="creator">Creator</option>
-      <option value="brand">Brand</option>
-    </select>
-    <button onclick="signup()">Sign Up</button>
-    <div class="link">Already have an account? <a href="login.html">Login</a></div>
-    <div id="message" class="error"></div>
-  </div>
 
+    <input type="text" id="name" placeholder="Your Name" required />
+    <input type="email" id="email" placeholder="Email" required />
+    <input type="password" id="password" placeholder="Password" required />
+    <select id="role">
+      <option value="Creator">Creator</option>
+      <option value="Brand">Brand</option>
+    </select>
+    <button id="signup-btn">Sign Up</button>
+    <small>Already have an account? <a href="login.html">Login</a></small>
+  </main>
+
+  <!-- Firebase SDKs -->
   <script type="module">
-    import { initializeApp } from "https://www.gstatic.com/firebasejs/9.6.1/firebase-app.js";
-    import { getAuth, createUserWithEmailAndPassword } from "https://www.gstatic.com/firebasejs/9.6.1/firebase-auth.js";
-    import { getFirestore, doc, setDoc } from "https://www.gstatic.com/firebasejs/9.6.1/firebase-firestore.js";
+    import { initializeApp } from "https://www.gstatic.com/firebasejs/10.8.1/firebase-app.js";
+    import { getAuth, createUserWithEmailAndPassword } from "https://www.gstatic.com/firebasejs/10.8.1/firebase-auth.js";
+    import { getFirestore, doc, setDoc } from "https://www.gstatic.com/firebasejs/10.8.1/firebase-firestore.js";
 
     const firebaseConfig = {
       apiKey: "AIzaSyBYrJRPAtvlWqZyn13_O75ZEeW3Xii5Nw8",
@@ -125,40 +63,33 @@
     const auth = getAuth(app);
     const db = getFirestore(app);
 
-    async function signup() {
+    document.getElementById("signup-btn").addEventListener("click", async () => {
       const name = document.getElementById("name").value.trim();
       const email = document.getElementById("email").value.trim();
       const password = document.getElementById("password").value;
       const role = document.getElementById("role").value;
-      const message = document.getElementById("message");
 
-      message.textContent = "";
+      if (!email || !password || !name) {
+        alert("Please fill in all fields.");
+        return;
+      }
 
       try {
         const userCredential = await createUserWithEmailAndPassword(auth, email, password);
-        const uid = userCredential.user.uid;
+        const user = userCredential.user;
 
-        await setDoc(doc(db, "users", uid), {
+        await setDoc(doc(db, "users", user.uid), {
           name,
           email,
-          role,
-          createdAt: new Date()
+          role
         });
 
-        message.className = "success";
-        message.textContent = "Registered! Redirecting...";
-        setTimeout(() => {
-          window.location.href = "login.html";
-        }, 1500);
+        alert("Welcome to Zoxta!");
+        window.location.href = "login.html";
       } catch (error) {
-        message.className = "error";
-        if (error.code === "auth/email-already-in-use") {
-          message.textContent = "This email is already registered.";
-        } else {
-          message.textContent = error.message;
-        }
+        alert("Signup failed: " + error.message);
       }
-    }
+    });
   </script>
 </body>
 </html>
