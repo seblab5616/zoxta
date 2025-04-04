@@ -1,13 +1,13 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
-  <meta charset="UTF-8" />
+  <meta charset="UTF-8"/>
   <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
   <title>Register — Zoxta</title>
   <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/@picocss/pico@1/css/pico.min.css"/>
   <style>
     body {
-      background: #a2fef2;
+      background: #a4f5ef;
       display: flex;
       justify-content: center;
       align-items: center;
@@ -16,15 +16,15 @@
     main {
       background: white;
       padding: 2rem;
-      border-radius: 1rem;
-      box-shadow: 0 0 20px rgba(0,0,0,0.1);
+      border-radius: 1.25rem;
+      box-shadow: 0 0 25px rgba(0, 0, 0, 0.1);
       max-width: 400px;
       width: 100%;
     }
     .logo {
       display: block;
       margin: 0 auto 1rem;
-      width: 120px;
+      width: 100px;
     }
   </style>
 </head>
@@ -44,11 +44,10 @@
     <small>Already have an account? <a href="login.html">Login</a></small>
   </main>
 
-  <!-- Firebase SDKs -->
   <script type="module">
     import { initializeApp } from "https://www.gstatic.com/firebasejs/10.8.1/firebase-app.js";
     import { getAuth, createUserWithEmailAndPassword } from "https://www.gstatic.com/firebasejs/10.8.1/firebase-auth.js";
-    import { getFirestore, doc, setDoc } from "https://www.gstatic.com/firebasejs/10.8.1/firebase-firestore.js";
+    import { getFirestore, setDoc, doc } from "https://www.gstatic.com/firebasejs/10.8.1/firebase-firestore.js";
 
     const firebaseConfig = {
       apiKey: "AIzaSyBYrJRPAtvlWqZyn13_O75ZEeW3Xii5Nw8",
@@ -69,7 +68,7 @@
       const password = document.getElementById("password").value;
       const role = document.getElementById("role").value;
 
-      if (!email || !password || !name) {
+      if (!name || !email || !password) {
         alert("Please fill in all fields.");
         return;
       }
@@ -81,13 +80,15 @@
         await setDoc(doc(db, "users", user.uid), {
           name,
           email,
-          role
+          role,
+          createdAt: new Date().toISOString()
         });
 
-        alert("Welcome to Zoxta!");
+        alert("Registration successful! Redirecting...");
         window.location.href = "login.html";
       } catch (error) {
         alert("Signup failed: " + error.message);
+        console.error(error);
       }
     });
   </script>
