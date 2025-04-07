@@ -1,0 +1,58 @@
+
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+  <title>Zoxta Creator Dashboard</title>
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;600&display=swap" rel="stylesheet"/>
+  <link rel="stylesheet" href="style.css"/>
+</head>
+<body>
+  <header>
+    <h1>Zoxta Creator Dashboard</h1>
+    <span id="userName"></span>
+  </header>
+  <nav>
+    <a onclick="showTab('welcome')">Welcome</a>
+    <a onclick="showTab('offers')">Offers</a>
+    <a onclick="showTab('responses')">Responses</a>
+    <a onclick="showTab('profile')">Profile</a>
+    <a onclick="logout()">Logout</a>
+  </nav>
+  <div class="container">
+    <div id="welcome" class="tab-content active">
+      <div class="card">
+        <h2>Welcome, <span id="displayName">...</span></h2>
+        <p>Your ID: <span id="userId">...</span></p>
+        <div id="news"><strong>News:</strong> <ul><li>New campaigns live this week!</li><li>SurpriseMe feed updated</li></ul></div>
+        <div class="chart-placeholder">Earnings Chart Placeholder</div>
+      </div>
+    </div>
+    <div id="offers" class="tab-content">
+      <div class="card">
+        <h2>Available Offers</h2>
+        <div id="offers-list">Loading...</div>
+      </div>
+    </div>
+    <div id="responses" class="tab-content">
+      <div class="card">
+        <h2>My Responses</h2>
+        <div id="responses-list">Loading...</div>
+      </div>
+    </div>
+    <div id="profile" class="tab-content">
+      <div class="card">
+        <h2>Your Profile</h2>
+        <form id="profileForm">
+          <label>Name: <input type="text" id="profileNameInput"/></label><br/>
+          <label>Email: <input type="email" id="profileEmailInput" disabled/></label><br/>
+          <label>Description: <input type="text" id="profileDescriptionInput"/></label><br/>
+          <button type="submit">Save</button>
+        </form>
+      </div>
+    </div>
+  </div>
+  <script type="module" src="main.js"></script>
+</body>
+</html>

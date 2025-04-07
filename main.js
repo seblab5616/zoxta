@@ -1,0 +1,1 @@
+// Placeholder Firebase integration logic for tab handling and offers fetching
