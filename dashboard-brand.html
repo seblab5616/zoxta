@@ -1,160 +1,12 @@
+
 <!DOCTYPE html>
-<html lang="en">
+<html>
 <head>
   <meta charset="UTF-8" />
-  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
-  <title>Zoxta Brand Dashboard</title>
-  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;600&display=swap" rel="stylesheet">
-  <style>
-    body {
-      font-family: 'Inter', sans-serif;
-      margin: 0;
-      background: #f6fafd;
-    }
-    header {
-      background: #00bfa6;
-      color: white;
-      padding: 1rem 2rem;
-      display: flex;
-      justify-content: space-between;
-      align-items: center;
-    }
-    nav {
-      background: #e0f7f4;
-      padding: 0.75rem 2rem;
-      display: flex;
-      gap: 1rem;
-    }
-    nav a {
-      color: #00796b;
-      text-decoration: none;
-      font-weight: 600;
-      cursor: pointer;
-    }
-    nav a:hover {
-      text-decoration: underline;
-    }
-    .container {
-      max-width: 900px;
-      margin: auto;
-      padding: 2rem;
-    }
-    .card {
-      background: white;
-      border-radius: 12px;
-      padding: 1.5rem;
-      margin-bottom: 1rem;
-      box-shadow: 0 2px 8px rgba(0,0,0,0.06);
-    }
-    .tab-content {
-      display: none;
-    }
-    .tab-content.active {
-      display: block;
-    }
-    label {
-      display: block;
-      margin-top: 0.5rem;
-      font-weight: 600;
-    }
-    input, textarea, select {
-      width: 100%;
-      padding: 0.5rem;
-      margin-top: 0.25rem;
-      border: 1px solid #ccc;
-      border-radius: 6px;
-    }
-    button {
-      margin-top: 1rem;
-      padding: 0.6rem 1.2rem;
-      background: #00bfa6;
-      color: white;
-      border: none;
-      border-radius: 6px;
-      cursor: pointer;
-      font-weight: 600;
-    }
-    .toggle {
-      margin-top: 0.5rem;
-    }
-  </style>
-</head>
-<body>
-  <header>
-    <h1>Zoxta Brand Dashboard</h1>
-    <span id="brandName">Loading...</span>
-  </header>
-  <nav>
-    <a onclick="showTab('welcome')">Welcome</a>
-    <a onclick="showTab('campaigns')">Campaigns</a>
-    <a onclick="showTab('applications')">Applications</a>
-    <a onclick="showTab('create')">Create</a>
-    <a onclick="showTab('profile')">Profile</a>
-    <a onclick="logout()">Logout</a>
-  </nav>
-  <div class="container">
-    <div id="welcome" class="tab-content active">
-      <div class="card">
-        <h2>Welcome, <span id="brandDisplayName">...</span></h2>
-        <p>Your ID: <span id="brandId">...</span></p>
-      </div>
-    </div>
-
-    <div id="campaigns" class="tab-content">
-      <div class="card">
-        <h2>Your Campaigns</h2>
-        <div id="campaignList">Loading...</div>
-      </div>
-    </div>
-
-    <div id="applications" class="tab-content">
-      <div class="card">
-        <h2>Creator Applications</h2>
-        <div id="applicationList">Loading...</div>
-      </div>
-    </div>
-
-    <div id="create" class="tab-content">
-      <div class="card">
-        <h2>Create Campaign</h2>
-        <label>Title</label>
-        <input id="newTitle" placeholder="Campaign title"/>
-        <label>Description</label>
-        <textarea id="newDescription" placeholder="What is the campaign about?"></textarea>
-        <label>Status</label>
-        <select id="newStatus">
-          <option>Pending</option>
-          <option>Active</option>
-        </select>
-        <label>Type</label>
-        <select id="newType">
-          <option>Open to All</option>
-          <option>By Application</option>
-        </select>
-        <label>Influencers Needed</label>
-        <input id="newNeeded" type="number" placeholder="5"/>
-        <label class="toggle">
-          <input type="checkbox" id="commissionCovered"/> Brand covers Zoxta 10% commission
-        </label>
-        <button onclick="submitCampaign()">Submit</button>
-      </div>
-    </div>
-
-    <div id="profile" class="tab-content">
-      <div class="card">
-        <h2>Your Brand Profile</h2>
-        <p><strong>Name:</strong> <span id="profileName">—</span></p>
-        <p><strong>Email:</strong> <span id="profileEmail">—</span></p>
-        <p><strong>Description:</strong> <span id="profileDescription">—</span></p>
-        <p><strong>Website:</strong> <span id="profileWebsite">—</span></p>
-      </div>
-    </div>
-  </div>
-
+  <title>Brand Dashboard</title>
   <script type="module">
-    import { initializeApp } from "https://www.gstatic.com/firebasejs/10.11.0/firebase-app.js";
-    import { getAuth, onAuthStateChanged, signOut } from "https://www.gstatic.com/firebasejs/10.11.0/firebase-auth.js";
-    import { getFirestore, doc, getDoc, getDocs, collection, query, where, addDoc } from "https://www.gstatic.com/firebasejs/10.11.0/firebase-firestore.js";
+    import { initializeApp } from 'https://www.gstatic.com/firebasejs/10.11.0/firebase-app.js';
+    import { getFirestore, collection, getDocs, addDoc } from 'https://www.gstatic.com/firebasejs/10.11.0/firebase-firestore.js';
 
     const firebaseConfig = {
       apiKey: "AIzaSyBYrJRPAtvlWqZyn13_O75ZEeW3Xii5Nw8",
@@ -166,83 +18,35 @@
     };
 
     const app = initializeApp(firebaseConfig);
-    const auth = getAuth();
     const db = getFirestore();
 
-    const brandName = document.getElementById("brandName");
-    const brandDisplayName = document.getElementById("brandDisplayName");
-    const brandId = document.getElementById("brandId");
-
-    onAuthStateChanged(auth, async (user) => {
-      if (user) {
-        const ref = doc(db, "users", user.uid);
-        const snap = await getDoc(ref);
-        if (snap.exists()) {
-          const data = snap.data();
-          brandName.textContent = data.name;
-          brandDisplayName.textContent = data.name;
-          brandId.textContent = data.id;
-          document.getElementById("profileName").textContent = data.name;
-          document.getElementById("profileEmail").textContent = data.email;
-          document.getElementById("profileDescription").textContent = data.description || "—";
-          document.getElementById("profileWebsite").textContent = data.website || "—";
-          loadCampaigns(user.uid);
-        }
-      } else {
-        window.location.href = "login.html";
-      }
-    });
-
-    async function loadCampaigns(brandId) {
-      const q = query(collection(db, "campaigns"), where("brand_id", "==", brandId));
-      const snap = await getDocs(q);
-      const list = document.getElementById("campaignList");
-      list.innerHTML = "";
-      snap.forEach(doc => {
-        const c = doc.data();
-        const div = document.createElement("div");
-        div.innerHTML = `<strong>${c.title}</strong> — ${c.status} (${c.type})`;
-        list.appendChild(div);
-      });
-    }
-
-    window.submitCampaign = async function () {
-      const user = auth.currentUser;
-      if (!user) return;
-      const ref = doc(db, "users", user.uid);
-      const snap = await getDoc(ref);
-      const brand_id = snap.data().id;
-      const title = document.getElementById("newTitle").value;
-      const description = document.getElementById("newDescription").value;
-      const status = document.getElementById("newStatus").value;
-      const type = document.getElementById("newType").value;
-      const needed = parseInt(document.getElementById("newNeeded").value || "1");
-      const commissionCovered = document.getElementById("commissionCovered").checked;
+    async function submitCampaign() {
+      const title = document.getElementById("title").value;
+      const description = document.getElementById("description").value;
+      const type = document.getElementById("type").value;
+      const commission_covered = document.getElementById("commission").checked;
 
       await addDoc(collection(db, "campaigns"), {
         title,
         description,
-        status,
         type,
-        needed,
-        brand_id,
-        commission_covered: commissionCovered
+        commission_covered
       });
 
-      alert("Campaign created!");
-      showTab("campaigns");
-      loadCampaigns(user.uid);
-    }
-
-    window.logout = async function () {
-      await signOut(auth);
-      window.location.href = "login.html";
-    }
-
-    window.showTab = function (id) {
-      document.querySelectorAll('.tab-content').forEach(el => el.classList.remove("active"));
-      document.getElementById(id).classList.add("active");
+      alert("Campaign submitted!");
     }
   </script>
+</head>
+<body>
+  <h1>Brand Dashboard</h1>
+  <h2>Create Campaign</h2>
+  <input id="title" placeholder="Title"/><br/>
+  <textarea id="description" placeholder="Description"></textarea><br/>
+  <select id="type">
+    <option>Open</option>
+    <option>By Application</option>
+  </select><br/>
+  <label><input type="checkbox" id="commission"/> Commission Covered by Brand</label><br/>
+  <button onclick="submitCampaign()">Submit</button>
 </body>
 </html>

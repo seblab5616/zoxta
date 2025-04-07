@@ -1,152 +1,42 @@
+
 <!DOCTYPE html>
-<html lang="en">
+<html>
 <head>
   <meta charset="UTF-8" />
-  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <title>Zoxta Creator Dashboard</title>
-  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;600&display=swap" rel="stylesheet">
-  <style>
-    body {
-      margin: 0;
-      font-family: 'Inter', sans-serif;
-      background: #f3f7fa;
-      color: #222;
+  <title>Creator Dashboard</title>
+  <script type="module">
+    import { initializeApp } from 'https://www.gstatic.com/firebasejs/10.11.0/firebase-app.js';
+    import { getFirestore, collection, getDocs } from 'https://www.gstatic.com/firebasejs/10.11.0/firebase-firestore.js';
+
+    const firebaseConfig = {
+      apiKey: "AIzaSyBYrJRPAtvlWqZyn13_O75ZEeW3Xii5Nw8",
+      authDomain: "zoxta-cf336.firebaseapp.com",
+      projectId: "zoxta-cf336",
+      storageBucket: "zoxta-cf336.appspot.com",
+      messagingSenderId: "170053701235",
+      appId: "1:170053701235:web:2b61745dd5e5ef5f226406"
+    };
+
+    const app = initializeApp(firebaseConfig);
+    const db = getFirestore();
+
+    async function loadOffers() {
+      const offersList = document.getElementById("offers-list");
+      const querySnapshot = await getDocs(collection(db, "campaigns"));
+      offersList.innerHTML = "";
+      querySnapshot.forEach((doc) => {
+        const data = doc.data();
+        offersList.innerHTML += `<div><h3>${data.title}</h3><p>${data.description}</p><p>${data.type}</p>${
+          data.commission_covered ? "<span style='color:green;'>Commission Covered</span>" : ""
+        }</div><hr>`;
+      });
     }
-    header {
-      background: #00bfa6;
-      color: white;
-      padding: 1rem 2rem;
-      display: flex;
-      justify-content: space-between;
-      align-items: center;
-    }
-    header h1 {
-      margin: 0;
-      font-size: 1.5rem;
-    }
-    nav {
-      background: #e3faf7;
-      display: flex;
-      gap: 1rem;
-      padding: 0.75rem 2rem;
-      border-bottom: 1px solid #d4f2eb;
-    }
-    nav a {
-      text-decoration: none;
-      color: #007b6e;
-      font-weight: 600;
-      cursor: pointer;
-    }
-    nav a:hover {
-      text-decoration: underline;
-    }
-    .container {
-      padding: 2rem;
-      max-width: 900px;
-      margin: auto;
-    }
-    .card {
-      background: white;
-      padding: 1.5rem;
-      margin-bottom: 1rem;
-      border-radius: 12px;
-      box-shadow: 0 2px 10px rgba(0,0,0,0.05);
-    }
-    .card h2 {
-      margin-top: 0;
-      font-size: 1.2rem;
-    }
-    .tab-content {
-      display: none;
-    }
-    .tab-content.active {
-      display: block;
-    }
-    .editable {
-      border: 1px solid #ccc;
-      padding: 4px;
-      width: 100%;
-      margin: 4px 0;
-    }
-  </style>
+
+    window.onload = loadOffers;
+  </script>
 </head>
 <body>
-  <header>
-    <h1>Zoxta Creator Dashboard</h1>
-    <span id="userName"></span>
-  </header>
-  <nav>
-    <a onclick="showTab('welcome')">Welcome</a>
-    <a onclick="showTab('offers')">Offers</a>
-    <a onclick="showTab('responses')">Responses</a>
-    <a onclick="showTab('profile')">Profile</a>
-    <a onclick="logout()">Logout</a>
-  </nav>
-  <div class="container">
-    <div id="welcome" class="tab-content active">
-      <div class="card">
-        <h2>Welcome, <span id="displayName">...</span></h2>
-        <p>Your ID: <span id="userId">...</span></p>
-        <p><strong>Platform News:</strong> New features released this week! 🎉</p>
-        <div><strong>Estimated Earnings:</strong> $<span id="earnings">150</span></div>
-      </div>
-    </div>
-
-    <div id="offers" class="tab-content">
-      <div class="card">
-        <h2>Available Offers</h2>
-        <div id="offersList">
-          <div class="card">
-            <h3>Offer Title</h3>
-            <p>Description of offer...</p>
-            <button onclick="applyToOffer()">Apply</button>
-          </div>
-        </div>
-      </div>
-    </div>
-
-    <div id="responses" class="tab-content">
-      <div class="card">
-        <h2>My Responses</h2>
-        <p>Coming soon...</p>
-      </div>
-    </div>
-
-    <div id="profile" class="tab-content">
-      <div class="card">
-        <h2>Edit Profile</h2>
-        <label>Name: <input type="text" class="editable" id="profileName" /></label><br>
-        <label>Email: <input type="text" class="editable" id="profileEmail" /></label><br>
-        <label>Description: <textarea class="editable" id="profileDescription"></textarea></label><br>
-        <button onclick="saveProfile()">Save Profile</button>
-      </div>
-    </div>
-  </div>
-
-  <script>
-    function showTab(id) {
-      document.querySelectorAll('.tab-content').forEach(tab => tab.classList.remove('active'));
-      document.getElementById(id).classList.add('active');
-    }
-
-    function applyToOffer() {
-      alert("You have applied to this offer!");
-    }
-
-    function saveProfile() {
-      alert("Profile saved!");
-    }
-
-    function logout() {
-      alert("Logging out...");
-    }
-
-    document.getElementById('userName').innerText = "cSXV";
-    document.getElementById('displayName').innerText = "cSXV";
-    document.getElementById('userId').innerText = "123456";
-    document.getElementById('profileName').value = "cSXV";
-    document.getElementById('profileEmail').value = "csxv@example.com";
-    document.getElementById('profileDescription').value = "Just a cool creator!";
-  </script>
+  <h1>Creator Dashboard</h1>
+  <div id="offers-list">Loading campaigns...</div>
 </body>
 </html>
