@@ -56,23 +56,17 @@
       margin-top: 0;
       font-size: 1.2rem;
     }
-    .card p {
-      margin: 0.5rem 0 0 0;
-    }
     .tab-content {
       display: none;
     }
     .tab-content.active {
       display: block;
     }
-    .badge {
-      display: inline-block;
-      background: #00bfa6;
-      color: white;
-      font-size: 0.8rem;
-      padding: 0.2rem 0.5rem;
-      border-radius: 6px;
-      margin-left: 0.5rem;
+    .editable {
+      border: 1px solid #ccc;
+      padding: 4px;
+      width: 100%;
+      margin: 4px 0;
     }
   </style>
 </head>
@@ -93,111 +87,66 @@
       <div class="card">
         <h2>Welcome, <span id="displayName">...</span></h2>
         <p>Your ID: <span id="userId">...</span></p>
+        <p><strong>Platform News:</strong> New features released this week! 🎉</p>
+        <div><strong>Estimated Earnings:</strong> $<span id="earnings">150</span></div>
       </div>
     </div>
 
     <div id="offers" class="tab-content">
       <div class="card">
         <h2>Available Offers</h2>
-        <div id="offers">Loading...</div>
+        <div id="offersList">
+          <div class="card">
+            <h3>Offer Title</h3>
+            <p>Description of offer...</p>
+            <button onclick="applyToOffer()">Apply</button>
+          </div>
+        </div>
       </div>
     </div>
 
     <div id="responses" class="tab-content">
       <div class="card">
         <h2>My Responses</h2>
-        <div id="responses">Loading...</div>
+        <p>Coming soon...</p>
       </div>
     </div>
 
     <div id="profile" class="tab-content">
       <div class="card">
-        <h2>Your Profile</h2>
-        <p><strong>Name:</strong> <span id="profileName">—</span></p>
-        <p><strong>Email:</strong> <span id="profileEmail">—</span></p>
-        <p><strong>Description:</strong> <span id="profileDescription">—</span></p>
-        <p><strong>Instagram:</strong> <span id="profileInstagram">—</span></p>
-        <p><strong>YouTube:</strong> <span id="profileYoutube">—</span></p>
-        <p><strong>TikTok:</strong> <span id="profileTiktok">—</span></p>
-        <p><strong>Twitch:</strong> <span id="profileTwitch">—</span></p>
+        <h2>Edit Profile</h2>
+        <label>Name: <input type="text" class="editable" id="profileName" /></label><br>
+        <label>Email: <input type="text" class="editable" id="profileEmail" /></label><br>
+        <label>Description: <textarea class="editable" id="profileDescription"></textarea></label><br>
+        <button onclick="saveProfile()">Save Profile</button>
       </div>
     </div>
   </div>
 
-  <script type="module">
-    import { initializeApp } from "https://www.gstatic.com/firebasejs/10.11.0/firebase-app.js";
-    import { getAuth, onAuthStateChanged, signOut } from "https://www.gstatic.com/firebasejs/10.11.0/firebase-auth.js";
-    import { getFirestore, doc, getDoc, collection, getDocs, query, where } from "https://www.gstatic.com/firebasejs/10.11.0/firebase-firestore.js";
-
-    const firebaseConfig = {
-      apiKey: "AIzaSyBYrJRPAtvlWqZyn13_O75ZEeW3Xii5Nw8",
-      authDomain: "zoxta-cf336.firebaseapp.com",
-      projectId: "zoxta-cf336",
-      storageBucket: "zoxta-cf336.appspot.com",
-      messagingSenderId: "170053701235",
-      appId: "1:170053701235:web:2b61745dd5e5ef5f226406"
-    };
-
-    const app = initializeApp(firebaseConfig);
-    const auth = getAuth();
-    const db = getFirestore();
-
-    const userNameEl = document.getElementById("userName");
-    const displayNameEl = document.getElementById("displayName");
-    const userIdEl = document.getElementById("userId");
-    const profileNameEl = document.getElementById("profileName");
-    const profileEmailEl = document.getElementById("profileEmail");
-    const profileDescriptionEl = document.getElementById("profileDescription");
-    const profileInstagramEl = document.getElementById("profileInstagram");
-    const profileYoutubeEl = document.getElementById("profileYoutube");
-    const profileTiktokEl = document.getElementById("profileTiktok");
-    const profileTwitchEl = document.getElementById("profileTwitch");
-
-    onAuthStateChanged(auth, async (user) => {
-      if (user) {
-        const userRef = doc(db, "users", user.uid);
-        const snap = await getDoc(userRef);
-        if (snap.exists()) {
-          const data = snap.data();
-          userNameEl.textContent = data.name;
-          displayNameEl.textContent = data.name;
-          userIdEl.textContent = data.id;
-          profileNameEl.textContent = data.name || "—";
-          profileEmailEl.textContent = data.email || "—";
-          profileDescriptionEl.textContent = data.description || "—";
-          profileInstagramEl.textContent = data.instagram || "—";
-          profileYoutubeEl.textContent = data.youtube || "—";
-          profileTiktokEl.textContent = data.tiktok || "—";
-          profileTwitchEl.textContent = data.twitch || "—";
-          loadOffers();
-        }
-      } else {
-        window.location.href = "login.html";
-      }
-    });
-
-    async function loadOffers() {
-      const q = query(collection(db, "campaigns"), where("status", "==", "Active"));
-      const snap = await getDocs(q);
-      const offersDiv = document.getElementById("offers");
-      offersDiv.innerHTML = "";
-      snap.forEach(doc => {
-        const c = doc.data();
-        const el = document.createElement("div");
-        el.innerHTML = `<strong>${c.title}</strong> - ${c.description} ${c.commission_covered ? '<span class="badge">Commission Covered by Brand</span>' : ''}`;
-        offersDiv.appendChild(el);
-      });
-    }
-
-    window.logout = async function () {
-      await signOut(auth);
-      window.location.href = "login.html";
-    }
-
-    window.showTab = function (id) {
-      document.querySelectorAll('.tab-content').forEach((el) => el.classList.remove('active'));
+  <script>
+    function showTab(id) {
+      document.querySelectorAll('.tab-content').forEach(tab => tab.classList.remove('active'));
       document.getElementById(id).classList.add('active');
     }
+
+    function applyToOffer() {
+      alert("You have applied to this offer!");
+    }
+
+    function saveProfile() {
+      alert("Profile saved!");
+    }
+
+    function logout() {
+      alert("Logging out...");
+    }
+
+    document.getElementById('userName').innerText = "cSXV";
+    document.getElementById('displayName').innerText = "cSXV";
+    document.getElementById('userId').innerText = "123456";
+    document.getElementById('profileName').value = "cSXV";
+    document.getElementById('profileEmail').value = "csxv@example.com";
+    document.getElementById('profileDescription').value = "Just a cool creator!";
   </script>
 </body>
 </html>
