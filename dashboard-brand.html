@@ -1,52 +1,160 @@
-
 <!DOCTYPE html>
-<html>
+<html lang="en">
 <head>
-  <meta charset="UTF-8" />
-  <title>Brand Dashboard</title>
-  <script type="module">
-    import { initializeApp } from 'https://www.gstatic.com/firebasejs/10.11.0/firebase-app.js';
-    import { getFirestore, collection, getDocs, addDoc } from 'https://www.gstatic.com/firebasejs/10.11.0/firebase-firestore.js';
-
-    const firebaseConfig = {
-      apiKey: "AIzaSyBYrJRPAtvlWqZyn13_O75ZEeW3Xii5Nw8",
-      authDomain: "zoxta-cf336.firebaseapp.com",
-      projectId: "zoxta-cf336",
-      storageBucket: "zoxta-cf336.appspot.com",
-      messagingSenderId: "170053701235",
-      appId: "1:170053701235:web:2b61745dd5e5ef5f226406"
-    };
-
-    const app = initializeApp(firebaseConfig);
-    const db = getFirestore();
-
-    async function submitCampaign() {
-      const title = document.getElementById("title").value;
-      const description = document.getElementById("description").value;
-      const type = document.getElementById("type").value;
-      const commission_covered = document.getElementById("commission").checked;
-
-      await addDoc(collection(db, "campaigns"), {
-        title,
-        description,
-        type,
-        commission_covered
-      });
-
-      alert("Campaign submitted!");
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Zoxta Brand Dashboard</title>
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;600&display=swap" rel="stylesheet">
+  <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+  <style>
+    body {
+      font-family: 'Inter', sans-serif;
+      background: #f4f7f9;
+      margin: 0;
     }
-  </script>
+    header {
+      background: #00bfa6;
+      color: white;
+      padding: 1rem 2rem;
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+    }
+    nav {
+      background: #e0f7f4;
+      padding: 0.75rem 2rem;
+      display: flex;
+      gap: 1rem;
+    }
+    nav a {
+      color: #00796b;
+      text-decoration: none;
+      font-weight: 600;
+      cursor: pointer;
+    }
+    .container {
+      max-width: 900px;
+      margin: auto;
+      padding: 2rem;
+    }
+    .tab-content { display: none; }
+    .tab-content.active { display: block; }
+    .card {
+      background: white;
+      border-radius: 12px;
+      padding: 1.5rem;
+      margin-bottom: 1rem;
+      box-shadow: 0 2px 8px rgba(0,0,0,0.06);
+    }
+    button {
+      margin-top: 1rem;
+      background: #00bfa6;
+      color: white;
+      border: none;
+      padding: 0.5rem 1rem;
+      border-radius: 8px;
+      cursor: pointer;
+    }
+    input, textarea, select {
+      width: 100%;
+      margin-top: 4px;
+      margin-bottom: 12px;
+      padding: 0.5rem;
+      border-radius: 6px;
+      border: 1px solid #ccc;
+    }
+  </style>
 </head>
 <body>
-  <h1>Brand Dashboard</h1>
-  <h2>Create Campaign</h2>
-  <input id="title" placeholder="Title"/><br/>
-  <textarea id="description" placeholder="Description"></textarea><br/>
-  <select id="type">
-    <option>Open</option>
-    <option>By Application</option>
-  </select><br/>
-  <label><input type="checkbox" id="commission"/> Commission Covered by Brand</label><br/>
-  <button onclick="submitCampaign()">Submit</button>
+  <header>
+    <h1>Zoxta Brand Dashboard</h1>
+    <span>Welcome, BrandX</span>
+  </header>
+  <nav>
+    <a onclick="showTab('overview')">Overview</a>
+    <a onclick="showTab('campaigns')">Campaigns</a>
+    <a onclick="showTab('create')">Create</a>
+    <a onclick="showTab('profile')">Profile</a>
+  </nav>
+
+  <div class="container">
+    <div id="overview" class="tab-content active">
+      <div class="card">
+        <h2>Campaign Performance</h2>
+        <canvas id="campaignChart" width="600" height="300"></canvas>
+      </div>
+    </div>
+
+    <div id="campaigns" class="tab-content">
+      <div class="card">
+        <h2>My Campaigns</h2>
+        <div class="card">
+          <h3>EcoDrink TikTok</h3>
+          <p>Influencer posts a 15s TikTok video. Type: Open. Commission Covered ✅</p>
+        </div>
+        <div class="card">
+          <h3>GlowSkin Reel</h3>
+          <p>Instagram reel with link in bio. Type: By Application.</p>
+        </div>
+      </div>
+    </div>
+
+    <div id="create" class="tab-content">
+      <div class="card">
+        <h2>Create New Campaign</h2>
+        <form onsubmit="event.preventDefault(); alert('Campaign submitted!');">
+          <label>Title:</label>
+          <input type="text" placeholder="Campaign title" />
+          <label>Description:</label>
+          <textarea placeholder="Campaign description..."></textarea>
+          <label>Type:</label>
+          <select>
+            <option>Open</option>
+            <option>By Application</option>
+          </select>
+          <label><input type="checkbox" /> Cover Zoxta 10% Commission</label><br>
+          <button type="submit">Submit</button>
+        </form>
+      </div>
+    </div>
+
+    <div id="profile" class="tab-content">
+      <div class="card">
+        <h2>Your Profile</h2>
+        <form onsubmit="event.preventDefault(); alert('Profile saved!')">
+          <label>Name: <input type="text" value="BrandX" /></label>
+          <label>Email: <input type="email" value="brandx@company.com" /></label>
+          <label>Description: <textarea rows="3">Premium DTC skincare brand.</textarea></label>
+          <button type="submit">Save</button>
+        </form>
+      </div>
+    </div>
+  </div>
+
+  <script>
+    function showTab(id) {
+      document.querySelectorAll('.tab-content').forEach(tab => tab.classList.remove('active'));
+      document.getElementById(id).classList.add('active');
+    }
+
+    const ctx = document.getElementById('campaignChart').getContext('2d');
+    new Chart(ctx, {
+      type: 'bar',
+      data: {
+        labels: ['Week 1', 'Week 2', 'Week 3', 'Week 4'],
+        datasets: [{
+          label: 'Applications per Campaign',
+          data: [5, 8, 3, 7],
+          backgroundColor: '#00bfa6'
+        }]
+      },
+      options: {
+        responsive: true,
+        scales: {
+          y: { beginAtZero: true }
+        }
+      }
+    });
+  </script>
 </body>
 </html>
