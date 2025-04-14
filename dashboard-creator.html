@@ -1,136 +1,37 @@
+
 <!DOCTYPE html>
-<html lang="en">
+<html>
 <head>
-  <meta charset="UTF-8" />
-  <title>Zoxta Creator Dashboard</title>
-  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
-  <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+  <title>Creator Dashboard - Campaign Feed</title>
+</head>
+<body>
+  <h1>Available Campaigns</h1>
+  <div id="campaignFeed">Loading...</div>
+
   <script type="module">
-    import { initializeApp } from "https://www.gstatic.com/firebasejs/10.11.0/firebase-app.js";
-    import { getFirestore, collection, getDocs, addDoc } from "https://www.gstatic.com/firebasejs/10.11.0/firebase-firestore.js";
+    import { db } from './firebase.js';
+    import { collection, getDocs, query, orderBy } from "https://www.gstatic.com/firebasejs/9.22.2/firebase-firestore.js";
 
-    const firebaseConfig = {
-      apiKey: "AIzaSyBYrJRPAtvlWqZyn13_O75ZEeW3Xii5Nw8",
-      authDomain: "zoxta-cf336.firebaseapp.com",
-      projectId: "zoxta-cf336",
-      storageBucket: "zoxta-cf336.appspot.com",
-      messagingSenderId: "170053701235",
-      appId: "1:170053701235:web:2b61745dd5e5ef5f226406"
-    };
+    const feed = document.getElementById('campaignFeed');
 
-    const app = initializeApp(firebaseConfig);
-    const db = getFirestore();
-
-    async function loadOffers() {
-      const snap = await getDocs(collection(db, "campaigns"));
-      const container = document.getElementById("offersContainer");
-      container.innerHTML = "";
-      snap.forEach(doc => {
+    async function loadCampaigns() {
+      const q = query(collection(db, "campaigns"), orderBy("created_at", "desc"));
+      const querySnapshot = await getDocs(q);
+      
+      feed.innerHTML = "";
+      querySnapshot.forEach(doc => {
         const c = doc.data();
-        container.innerHTML += `<div class="card">
-          <h3>${c.title}</h3>
-          <p>${c.description}</p>
-          <p><strong>Type:</strong> ${c.type}</p>
-          ${c.commission_covered ? "<p style='color:green;'>Commission Covered ✅</p>" : ""}
-          <button onclick="alert('Applied!')">Apply</button>
-        </div>`;
+        feed.innerHTML += `
+          <div class="campaign-card">
+            <h3>${c.title}</h3>
+            <p>${c.description}</p>
+            <p><strong>Needed:</strong> ${c.influencer_count}</p>
+          </div>
+        `;
       });
     }
 
-    async function submitSurpriseMe() {
-      const name = document.getElementById("pitchName").value;
-      const link = document.getElementById("pitchLink").value;
-      await addDoc(collection(db, "surpriseme"), { creator: name, video: link });
-      alert("Pitch uploaded!");
-    }
-
-    window.onload = loadOffers;
-    window.submitSurpriseMe = submitSurpriseMe;
-  </script>
-  <style>
-    body { font-family: Inter, sans-serif; background: #f4f7f9; margin: 0; }
-    header { background: #00bfa6; color: white; padding: 1rem 2rem; display: flex; justify-content: space-between; }
-    nav { background: #e0f7f4; padding: 0.75rem 2rem; display: flex; gap: 1rem; }
-    nav a { color: #00796b; text-decoration: none; font-weight: 600; cursor: pointer; }
-    .container { max-width: 900px; margin: auto; padding: 2rem; }
-    .tab-content { display: none; }
-    .tab-content.active { display: block; }
-    .card { background: white; border-radius: 12px; padding: 1.5rem; margin-bottom: 1rem; box-shadow: 0 2px 8px rgba(0,0,0,0.06); }
-    input, textarea { width: 100%; margin-top: 4px; margin-bottom: 12px; padding: 0.5rem; border-radius: 6px; border: 1px solid #ccc; }
-    button { background: #00bfa6; color: white; border: none; padding: 0.5rem 1rem; border-radius: 8px; cursor: pointer; }
-  </style>
-</head>
-<body>
-  <header>
-    <h1>Zoxta Creator Dashboard</h1>
-    <span>Welcome, cSXV</span>
-  </header>
-  <nav>
-    <a onclick="showTab('welcome')">Welcome</a>
-    <a onclick="showTab('offers')">Offers</a>
-    <a onclick="showTab('surprise')">SurpriseMe</a>
-    <a onclick="showTab('profile')">Profile</a>
-  </nav>
-  <div class="container">
-    <div id="welcome" class="tab-content active">
-      <div class="card">
-        <h2>Welcome Back!</h2>
-        <canvas id="earningsChart" width="600" height="300"></canvas>
-      </div>
-    </div>
-
-    <div id="offers" class="tab-content">
-      <div class="card">
-        <h2>Available Offers</h2>
-        <div id="offersContainer">Loading offers...</div>
-      </div>
-    </div>
-
-    <div id="surprise" class="tab-content">
-      <div class="card">
-        <h2>🎤 Submit a SurpriseMe Pitch</h2>
-        <input id="pitchName" placeholder="Your Name" />
-        <input id="pitchLink" placeholder="Video URL (e.g. Cloudinary)" />
-        <button onclick="submitSurpriseMe()">Submit Pitch</button>
-      </div>
-    </div>
-
-    <div id="profile" class="tab-content">
-      <div class="card">
-        <h2>Your Profile</h2>
-        <form onsubmit="event.preventDefault(); alert('Profile saved!')">
-          <label>Name: <input type="text" value="cSXV" /></label>
-          <label>Email: <input type="email" value="csxv@example.com" /></label>
-          <label>Description: <textarea rows="3">I'm a content creator.</textarea></label>
-          <button type="submit">Save</button>
-        </form>
-      </div>
-    </div>
-  </div>
-
-  <script>
-    function showTab(id) {
-      document.querySelectorAll('.tab-content').forEach(tab => tab.classList.remove('active'));
-      document.getElementById(id).classList.add('active');
-    }
-
-    const ctx = document.getElementById('earningsChart').getContext('2d');
-    new Chart(ctx, {
-      type: 'line',
-      data: {
-        labels: ['Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat', 'Sun'],
-        datasets: [{
-          label: 'Earnings ($)',
-          data: [110, 140, 130, 160, 180, 170, 200],
-          borderColor: '#00bfa6',
-          tension: 0.4
-        }]
-      },
-      options: {
-        responsive: true,
-        scales: { y: { beginAtZero: true } }
-      }
-    });
+    loadCampaigns();
   </script>
 </body>
 </html>
