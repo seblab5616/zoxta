@@ -1,0 +1,818 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <title>Zoxta TikTok Analyzer</title>
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/Chart.js/4.4.1/chart.umd.min.js"></script>
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/xlsx/0.18.5/xlsx.full.min.js"></script>
+  <style>
+    body { font-family: Inter, sans-serif; background: #f4f7f9; margin: 0; color: #1f2d3a; }
+    header { background: #00bfa6; color: white; padding: 1rem 2rem; display: flex; justify-content: space-between; align-items: center; flex-wrap: wrap; gap: .5rem; }
+    header h1 { margin: 0; font-size: 1.4rem; }
+    header a { color: white; }
+    nav { background: #e0f7f4; padding: 0.75rem 2rem; display: flex; gap: 1rem; flex-wrap: wrap; }
+    nav a { color: #00796b; text-decoration: none; font-weight: 600; cursor: pointer; }
+    nav a.active { text-decoration: underline; }
+    .container { max-width: 1100px; margin: auto; padding: 2rem; }
+    .tab-content { display: none; }
+    .tab-content.active { display: block; }
+    .card { background: white; border-radius: 12px; padding: 1.5rem; margin-bottom: 1rem; box-shadow: 0 2px 8px rgba(0,0,0,0.06); }
+    .card h2, .card h3 { margin-top: 0; }
+    input, textarea, select { width: 100%; box-sizing: border-box; margin-top: 4px; margin-bottom: 12px; padding: 0.5rem; border-radius: 6px; border: 1px solid #ccc; font: inherit; }
+    button { background: #00bfa6; color: white; border: none; padding: 0.5rem 1rem; border-radius: 8px; cursor: pointer; font: inherit; }
+    button.secondary { background: #e0f7f4; color: #00796b; }
+    button.danger { background: #fdecea; color: #b3261e; }
+    .row { display: flex; gap: .5rem; flex-wrap: wrap; align-items: center; }
+    .grid { display: grid; gap: 1rem; grid-template-columns: repeat(auto-fit, minmax(160px, 1fr)); }
+    .grid-2 { display: grid; gap: 1rem; grid-template-columns: repeat(auto-fit, minmax(320px, 1fr)); }
+    .kpi { background: white; border-radius: 12px; padding: 1rem 1.25rem; box-shadow: 0 2px 8px rgba(0,0,0,0.06); }
+    .kpi .label { font-size: .8rem; color: #5b6b78; text-transform: uppercase; letter-spacing: .04em; }
+    .kpi .value { font-size: 1.6rem; font-weight: 700; margin-top: .25rem; font-variant-numeric: tabular-nums; }
+    .kpi .sub { overflow-wrap: anywhere; font-size: .8rem; color: #5b6b78; margin-top: .25rem; }
+    .drop { border: 2px dashed #00bfa6; border-radius: 12px; padding: 2rem; text-align: center; background: #f7fffd; cursor: pointer; }
+    .drop.over { background: #e0f7f4; }
+    .muted { color: #5b6b78; font-size: .9rem; }
+    .chart-box { position: relative; height: 280px; }
+    table { width: 100%; border-collapse: collapse; font-size: .9rem; }
+    th, td { padding: .5rem; border-bottom: 1px solid #eef1f3; text-align: left; vertical-align: top; }
+    th { cursor: pointer; user-select: none; white-space: nowrap; color: #00796b; }
+    td.num, th.num { text-align: right; font-variant-numeric: tabular-nums; }
+    .table-wrap { overflow-x: auto; }
+    .badge { display: inline-block; padding: 2px 8px; border-radius: 999px; font-size: .78rem; font-weight: 600; white-space: nowrap; }
+    .b-hit { background: #d7f5ec; color: #00695c; }
+    .b-ok { background: #eef1f3; color: #3c4b57; }
+    .b-low { background: #fdecea; color: #b3261e; }
+    .insights li { margin-bottom: .6rem; line-height: 1.45; }
+    .empty { text-align: center; padding: 3rem 1rem; color: #5b6b78; }
+    .caption { max-width: 360px; overflow: hidden; text-overflow: ellipsis; display: -webkit-box; -webkit-line-clamp: 2; -webkit-box-orient: vertical; }
+    code { background: #eef1f3; padding: 1px 5px; border-radius: 4px; }
+    @media (max-width: 600px) { .container { padding: 1rem; } header, nav { padding-left: 1rem; padding-right: 1rem; } }
+  </style>
+</head>
+<body>
+  <header>
+    <h1>Zoxta TikTok Analyzer</h1>
+    <a href="dashboard-creator.html">← Creator Dashboard</a>
+  </header>
+  <nav>
+    <a data-tab="import" class="active">1. Import</a>
+    <a data-tab="overview">2. Overview</a>
+    <a data-tab="videos">3. Videos</a>
+    <a data-tab="insights">4. Insights</a>
+  </nav>
+
+  <div class="container">
+    <!-- IMPORT -->
+    <div id="import" class="tab-content active">
+      <div class="card">
+        <h2>Import your TikTok data</h2>
+        <div class="drop" id="drop">
+          <strong>Drop a file here or click to choose</strong>
+          <div class="muted">Supports .csv, .xlsx and .json — everything stays in your browser.</div>
+          <input type="file" id="fileInput" accept=".csv,.xlsx,.xls,.json,.txt" hidden />
+        </div>
+        <p class="muted" id="importStatus"></p>
+        <details>
+          <summary><strong>Where do I get this file?</strong></summary>
+          <ul class="muted">
+            <li><strong>TikTok Studio (best):</strong> on desktop go to <em>TikTok Studio → Analytics → Content</em> and use <em>Download data</em>. You get a spreadsheet with views, likes, comments, shares and more per video.</li>
+            <li><strong>Account data export:</strong> <em>Settings → Account → Download your data</em>, choose JSON. Upload <code>user_data.json</code> — it includes post dates, links, captions and likes (TikTok doesn't include views there).</li>
+            <li><strong>Any spreadsheet:</strong> columns are detected by name, e.g. <code>Title</code>, <code>Date</code>, <code>Views</code>, <code>Likes</code>, <code>Comments</code>, <code>Shares</code>, <code>Saves</code>, <code>Duration</code>, <code>Avg watch time</code>, <code>Completion rate</code>, <code>New followers</code>. Values like <code>12.3K</code> and <code>1.2M</code> are fine.</li>
+          </ul>
+        </details>
+        <div class="row" style="margin-top:1rem">
+          <button class="secondary" id="sampleBtn">Try with sample data</button>
+          <button class="danger" id="clearBtn">Clear all data</button>
+        </div>
+      </div>
+
+      <div class="card">
+        <h3>Add a video manually</h3>
+        <form id="manualForm">
+          <label>Caption / title<input name="title" placeholder="My video #fyp #recipe" /></label>
+          <div class="grid">
+            <label>Posted at<input name="date" type="datetime-local" required /></label>
+            <label>Views<input name="views" inputmode="numeric" placeholder="12.4K" required /></label>
+            <label>Likes<input name="likes" inputmode="numeric" placeholder="0" /></label>
+            <label>Comments<input name="comments" inputmode="numeric" placeholder="0" /></label>
+            <label>Shares<input name="shares" inputmode="numeric" placeholder="0" /></label>
+            <label>Saves<input name="saves" inputmode="numeric" placeholder="0" /></label>
+            <label>Duration (sec)<input name="duration" inputmode="numeric" placeholder="optional" /></label>
+            <label>Avg watch time (sec)<input name="avgWatch" inputmode="decimal" placeholder="optional" /></label>
+          </div>
+          <button type="submit">Add video</button>
+        </form>
+      </div>
+    </div>
+
+    <!-- OVERVIEW -->
+    <div id="overview" class="tab-content">
+      <div class="card row" style="justify-content:space-between">
+        <div><strong>Date range</strong> <span class="muted">(filters every tab)</span></div>
+        <select id="rangeSelect" style="width:auto;margin:0">
+          <option value="all">All time</option>
+          <option value="7">Last 7 days</option>
+          <option value="30">Last 30 days</option>
+          <option value="90">Last 90 days</option>
+          <option value="365">Last 12 months</option>
+        </select>
+      </div>
+      <div class="grid" id="kpis" style="margin-bottom:1rem"></div>
+      <div class="card">
+        <h3>Views per video over time</h3>
+        <div class="chart-box"><canvas id="timelineChart"></canvas></div>
+      </div>
+      <div class="grid-2">
+        <div class="card">
+          <h3>Median views by day posted</h3>
+          <div class="chart-box"><canvas id="dayChart"></canvas></div>
+        </div>
+        <div class="card" id="hourCard">
+          <h3>Median views by hour posted</h3>
+          <div class="chart-box"><canvas id="hourChart"></canvas></div>
+        </div>
+        <div class="card" id="durationCard">
+          <h3>Video length vs views</h3>
+          <div class="chart-box"><canvas id="durationChart"></canvas></div>
+        </div>
+        <div class="card">
+          <h3>Engagement mix</h3>
+          <div class="chart-box"><canvas id="mixChart"></canvas></div>
+        </div>
+      </div>
+    </div>
+
+    <!-- VIDEOS -->
+    <div id="videos" class="tab-content">
+      <div class="card">
+        <div class="row" style="justify-content:space-between">
+          <input id="search" placeholder="Search captions or #hashtags…" style="max-width:360px;margin:0" />
+          <button class="secondary" id="exportBtn">Export CSV with metrics</button>
+        </div>
+        <p class="muted">“Vs. typical” compares each video's views to your median. Click a column to sort.</p>
+        <div class="table-wrap"><table id="videoTable"></table></div>
+      </div>
+      <div class="card">
+        <h3>Hashtag performance</h3>
+        <p class="muted">Hashtags used on at least 2 videos, ranked by median views.</p>
+        <div class="table-wrap"><table id="tagTable"></table></div>
+      </div>
+    </div>
+
+    <!-- INSIGHTS -->
+    <div id="insights" class="tab-content">
+      <div class="card">
+        <h2>What the numbers say</h2>
+        <ul class="insights" id="insightList"></ul>
+      </div>
+    </div>
+  </div>
+
+  <script>
+  (() => {
+    const STORAGE_KEY = "zoxta_tiktok_videos_v1";
+    const DAYS = ["Sun", "Mon", "Tue", "Wed", "Thu", "Fri", "Sat"];
+    const TEAL = "#00bfa6", DARK_TEAL = "#00796b", CORAL = "#ff6b6b", AMBER = "#f5a623", BLUE = "#4a90e2";
+    const charts = {};
+    let videos = load();
+    let sort = { key: "date", dir: -1 };
+
+    // ---------- helpers ----------
+    const $ = (id) => document.getElementById(id);
+    const esc = (s) => String(s ?? "").replace(/[&<>"']/g, c => ({ "&": "&amp;", "<": "&lt;", ">": "&gt;", '"': "&quot;", "'": "&#39;" }[c]));
+    const fmt = (n) => {
+      if (n == null || isNaN(n)) return "–";
+      const a = Math.abs(n);
+      if (a >= 1e6) return (n / 1e6).toFixed(a >= 1e7 ? 0 : 1) + "M";
+      if (a >= 1e4) return (n / 1e3).toFixed(0) + "K";
+      if (a >= 1e3) return (n / 1e3).toFixed(1) + "K";
+      return Math.round(n).toLocaleString();
+    };
+    const pct = (n, d = 1) => (n == null || isNaN(n)) ? "–" : (n * 100).toFixed(d) + "%";
+    const median = (arr) => {
+      const a = arr.filter(x => x != null && !isNaN(x)).sort((x, y) => x - y);
+      if (!a.length) return null;
+      const m = Math.floor(a.length / 2);
+      return a.length % 2 ? a[m] : (a[m - 1] + a[m]) / 2;
+    };
+    const sum = (arr) => arr.reduce((s, x) => s + (x || 0), 0);
+    const mean = (arr) => { const a = arr.filter(x => x != null && !isNaN(x)); return a.length ? sum(a) / a.length : null; };
+
+    // "12.3K", "1,234", "4.5M", "45%" → number
+    function num(v) {
+      if (v == null || v === "") return null;
+      if (typeof v === "number") return v;
+      let s = String(v).trim().toLowerCase().replace(/,/g, "").replace(/\s/g, "");
+      if (!s || s === "-" || s === "n/a") return null;
+      const isPct = s.endsWith("%");
+      s = s.replace("%", "");
+      let mult = 1;
+      if (/[k]$/.test(s)) { mult = 1e3; s = s.slice(0, -1); }
+      else if (/[m]$/.test(s)) { mult = 1e6; s = s.slice(0, -1); }
+      else if (/[b]$/.test(s)) { mult = 1e9; s = s.slice(0, -1); }
+      else if (/s$/.test(s)) { s = s.slice(0, -1); }
+      const n = parseFloat(s);
+      if (isNaN(n)) return null;
+      return isPct ? n / 100 : n * mult;
+    }
+
+    // "0:45", "1:02:03", "45s", 45 → seconds
+    function seconds(v) {
+      if (v == null || v === "") return null;
+      if (typeof v === "number") return v;
+      const s = String(v).trim();
+      if (/^\d+(:\d{1,2}){1,2}$/.test(s)) return s.split(":").reduce((acc, p) => acc * 60 + Number(p), 0);
+      return num(s);
+    }
+
+    function parseDate(v) {
+      if (v == null || v === "") return null;
+      if (v instanceof Date) return isNaN(v) ? null : v;
+      if (typeof v === "number") {
+        if (v > 1e11) return new Date(v);          // ms timestamp
+        if (v > 1e9) return new Date(v * 1000);    // unix seconds
+        if (v > 20000 && v < 80000) return new Date(Math.round((v - 25569) * 864e5)); // Excel serial
+        return null;
+      }
+      let s = String(v).trim();
+      if (/^\d{10}$/.test(s)) return new Date(Number(s) * 1000);
+      // "2024-03-01 18:22:10" → treat as local time
+      s = s.replace(/^(\d{4}-\d{2}-\d{2}) (\d)/, "$1T$2").replace(/ UTC$/, "Z");
+      const d = new Date(s);
+      return isNaN(d) ? null : d;
+    }
+
+    // ---------- column detection ----------
+    const FIELD_PATTERNS = [
+      ["title", /^(video )?(title|caption|description|desc|video description)$/],
+      ["link", /(link|url)/],
+      ["date", /(post(ed)? ?(time|date|at|on)|create(d)?( ?time| ?at| ?date)?|publish(ed)?( ?time| ?date)?|^date$|^time$|upload)/],
+      ["views", /(video ?views|^views?$|total ?views|plays?|play ?count|view ?count)/],
+      ["likes", /(likes?|hearts?|digg)/],
+      ["comments", /comments?/],
+      ["shares", /shares?/],
+      ["saves", /(saves?|favou?rites?|bookmarks?|collect)/],
+      ["duration", /(duration|video ?length|length)/],
+      ["avgWatch", /(average|avg).*watch/],
+      ["completion", /(full ?video|complet|finish)/],
+      ["reach", /reach|unique viewers/],
+      ["newFollowers", /(new ?)?follower/],
+    ];
+
+    function mapColumns(headers) {
+      const map = {};
+      for (const h of headers) {
+        const n = String(h).toLowerCase().replace(/[_\-]+/g, " ").replace(/\(.*?\)/g, "").trim();
+        for (const [field, re] of FIELD_PATTERNS) {
+          if (map[field] == null && re.test(n)) {
+            // avoid "total watch time" or "watched full video" being taken as views
+            if (field === "views" && /watch|full|profile/.test(n)) continue;
+            map[field] = h;
+            break;
+          }
+        }
+      }
+      return map;
+    }
+
+    function normalizeRows(rows) {
+      if (!rows.length) return { videos: [], mapping: {} };
+      const headers = [...new Set(rows.flatMap(r => Object.keys(r)))];
+      const m = mapColumns(headers);
+      const out = [];
+      for (const r of rows) {
+        const g = (f) => m[f] != null ? r[m[f]] : null;
+        const v = {
+          title: String(g("title") ?? "").trim(),
+          link: String(g("link") ?? "").trim(),
+          date: parseDate(g("date")),
+          views: num(g("views")),
+          likes: num(g("likes")),
+          comments: num(g("comments")),
+          shares: num(g("shares")),
+          saves: num(g("saves")),
+          duration: seconds(g("duration")),
+          avgWatch: seconds(g("avgWatch")),
+          completion: num(g("completion")),
+          reach: num(g("reach")),
+          newFollowers: num(g("newFollowers")),
+        };
+        if (v.completion != null && v.completion > 1) v.completion /= 100;
+        if (!v.date && v.views == null && v.likes == null) continue; // blank / summary row
+        out.push(v);
+      }
+      return { videos: out, mapping: m };
+    }
+
+    // TikTok "Download your data" JSON: find the VideoList wherever it lives.
+    function fromTikTokJson(obj) {
+      const lists = [];
+      (function walk(o, depth) {
+        if (!o || typeof o !== "object" || depth > 6) return;
+        if (Array.isArray(o)) {
+          if (o.length && typeof o[0] === "object" && o[0] && ("Date" in o[0] || "Link" in o[0] || "Likes" in o[0] || "views" in o[0] || "Views" in o[0])) lists.push(o);
+          return;
+        }
+        for (const [k, val] of Object.entries(o)) {
+          if (/^(VideoList|videoList|videos|Videos|posts)$/.test(k) && Array.isArray(val)) lists.push(val);
+          else walk(val, depth + 1);
+        }
+      })(obj, 0);
+      if (Array.isArray(obj) && !lists.length) lists.push(obj);
+      return lists.flat().map(r => ({
+        Title: r.Title ?? r.Caption ?? r.Desc ?? r.desc ?? r.title ?? r.caption ?? "",
+        Link: r.Link ?? r.VideoLink ?? r.link ?? r.url ?? "",
+        Date: r.Date ?? r.date ?? r.createTime ?? r.create_time ?? r.CreateTime ?? "",
+        Views: r.Views ?? r.views ?? r.playCount ?? r.play_count ?? r.stats?.playCount ?? null,
+        Likes: r.Likes ?? r.likes ?? r.diggCount ?? r.digg_count ?? r.stats?.diggCount ?? null,
+        Comments: r.Comments ?? r.comments ?? r.commentCount ?? r.stats?.commentCount ?? null,
+        Shares: r.Shares ?? r.shares ?? r.shareCount ?? r.stats?.shareCount ?? null,
+        Saves: r.Saves ?? r.saves ?? r.collectCount ?? r.stats?.collectCount ?? null,
+        Duration: r.Duration ?? r.duration ?? r.video?.duration ?? null,
+      }));
+    }
+
+    function parseCSV(text) {
+      text = text.replace(/^﻿/, "");
+      const firstLine = text.split(/\r?\n/)[0] || "";
+      const delim = [",", ";", "\t"].sort((a, b) => firstLine.split(b).length - firstLine.split(a).length)[0];
+      const rows = []; let row = [], field = "", q = false;
+      for (let i = 0; i < text.length; i++) {
+        const c = text[i];
+        if (q) {
+          if (c === '"' && text[i + 1] === '"') { field += '"'; i++; }
+          else if (c === '"') q = false;
+          else field += c;
+        } else if (c === '"') q = true;
+        else if (c === delim) { row.push(field); field = ""; }
+        else if (c === "\n" || c === "\r") {
+          if (c === "\r" && text[i + 1] === "\n") i++;
+          row.push(field); rows.push(row); row = []; field = "";
+        } else field += c;
+      }
+      if (field || row.length) { row.push(field); rows.push(row); }
+      const clean = rows.filter(r => r.some(x => x.trim() !== ""));
+      // TikTok exports sometimes have a title line above the header; pick the row with most recognised columns
+      let hi = 0, best = -1;
+      clean.slice(0, 10).forEach((r, i) => { const s = Object.keys(mapColumns(r)).length; if (s > best) { best = s; hi = i; } });
+      const headers = clean[hi] || [];
+      return clean.slice(hi + 1).map(r => Object.fromEntries(headers.map((h, i) => [h, r[i]])));
+    }
+
+    function parseSheet(buf) {
+      const wb = XLSX.read(buf, { type: "array", cellDates: true });
+      let best = [];
+      for (const name of wb.SheetNames) {
+        const grid = XLSX.utils.sheet_to_json(wb.Sheets[name], { header: 1, raw: true, defval: "" });
+        let hi = 0, score = -1;
+        grid.slice(0, 10).forEach((r, i) => { const s = Object.keys(mapColumns(r)).length; if (s > score) { score = s; hi = i; } });
+        const headers = grid[hi] || [];
+        const rows = grid.slice(hi + 1).map(r => Object.fromEntries(headers.map((h, i) => [h, r[i]])));
+        if (rows.length > best.length && score > 0) best = rows;
+      }
+      return best;
+    }
+
+    async function importFile(file) {
+      const status = $("importStatus");
+      try {
+        let rows;
+        const ext = file.name.split(".").pop().toLowerCase();
+        if (ext === "xlsx" || ext === "xls") rows = parseSheet(await file.arrayBuffer());
+        else {
+          const text = await file.text();
+          if (ext === "json" || /^\s*[\[{]/.test(text)) rows = fromTikTokJson(JSON.parse(text));
+          else rows = parseCSV(text);
+        }
+        const { videos: incoming, mapping } = normalizeRows(rows);
+        if (!incoming.length) throw new Error("No videos found. Check that the file has a header row with columns like Date, Views, Likes.");
+        const added = merge(incoming);
+        const found = Object.keys(mapping).join(", ");
+        status.innerHTML = `✅ Imported <strong>${incoming.length}</strong> videos from <em>${esc(file.name)}</em> (${added} new, ${incoming.length - added} updated). Detected columns: ${esc(found)}.`;
+        afterChange(true);
+      } catch (e) {
+        console.error(e);
+        status.textContent = "⚠️ " + e.message;
+      }
+    }
+
+    // Deduplicate by link, else by timestamp + caption.
+    const keyOf = (v) => v.link || `${v.date ? +new Date(v.date) : ""}|${v.title.slice(0, 40)}`;
+    function merge(incoming) {
+      const idx = new Map(videos.map((v, i) => [keyOf(v), i]));
+      let added = 0;
+      for (const v of incoming) {
+        const k = keyOf(v);
+        if (idx.has(k)) {
+          const old = videos[idx.get(k)];
+          for (const f in v) if (v[f] != null && v[f] !== "") old[f] = v[f];
+        } else { idx.set(k, videos.length); videos.push(v); added++; }
+      }
+      return added;
+    }
+
+    function load() {
+      try {
+        const raw = JSON.parse(localStorage.getItem(STORAGE_KEY) || "[]");
+        return raw.map(v => ({ ...v, date: v.date ? new Date(v.date) : null }));
+      } catch { return []; }
+    }
+    function save() { try { localStorage.setItem(STORAGE_KEY, JSON.stringify(videos)); } catch {} }
+
+    // ---------- derived metrics ----------
+    function enrich(list) {
+      const med = median(list.map(v => v.views));
+      return list.map(v => {
+        const interactions = sum([v.likes, v.comments, v.shares, v.saves]);
+        const er = v.views ? interactions / v.views : null;
+        const watchPct = v.avgWatch != null && v.duration ? Math.min(v.avgWatch / v.duration, 1) : null;
+        const tags = (v.title.match(/#[\p{L}\p{N}_]+/gu) || []).map(t => t.toLowerCase());
+        return { ...v, interactions, er, watchPct, tags, vsMedian: v.views != null && med ? v.views / med : null };
+      });
+    }
+
+    function filtered() {
+      const r = $("rangeSelect").value;
+      if (r === "all") return enrich(videos);
+      const cutoff = Date.now() - Number(r) * 864e5;
+      return enrich(videos.filter(v => v.date && +v.date >= cutoff));
+    }
+
+    // ---------- rendering ----------
+    function kpi(label, value, sub = "") {
+      return `<div class="kpi"><div class="label">${label}</div><div class="value">${value}</div><div class="sub">${sub}</div></div>`;
+    }
+
+    function renderOverview(list) {
+      const hasViews = list.some(v => v.views != null);
+      const views = list.map(v => v.views);
+      const ers = list.map(v => v.er);
+      const dated = list.filter(v => v.date).sort((a, b) => a.date - b.date);
+      let perWeek = null;
+      if (dated.length > 1) {
+        const weeks = Math.max((dated.at(-1).date - dated[0].date) / (7 * 864e5), 1);
+        perWeek = dated.length / weeks;
+      }
+      const best = [...list].sort((a, b) => (b.views ?? b.likes ?? 0) - (a.views ?? a.likes ?? 0))[0];
+      const followers = sum(list.map(v => v.newFollowers));
+      $("kpis").innerHTML = [
+        kpi("Videos", list.length, perWeek ? `${perWeek.toFixed(1)} posts / week` : ""),
+        hasViews ? kpi("Total views", fmt(sum(views)), `median ${fmt(median(views))} per video`) : "",
+        kpi("Total likes", fmt(sum(list.map(v => v.likes))), hasViews ? `${pct(sum(list.map(v => v.likes)) / (sum(views) || 1))} of views` : ""),
+        hasViews ? kpi("Engagement rate", pct(median(ers)), "median interactions ÷ views") : "",
+        list.some(v => v.watchPct != null) ? kpi("Avg % watched", pct(median(list.map(v => v.watchPct)), 0), "median across videos") : "",
+        list.some(v => v.completion != null) ? kpi("Full watch rate", pct(median(list.map(v => v.completion))), "median across videos") : "",
+        followers ? kpi("New followers", fmt(followers), `${(followers / list.length).toFixed(1)} per video`) : "",
+        best ? kpi("Top video", fmt(best.views ?? best.likes), esc((best.title || "Untitled").slice(0, 50))) : "",
+      ].join("");
+
+      const metric = hasViews ? "views" : "likes";
+      const metricLabel = hasViews ? "Views" : "Likes";
+
+      // timeline with 5-video rolling median
+      const roll = dated.map((_, i) => median(dated.slice(Math.max(0, i - 4), i + 1).map(v => v[metric])));
+      drawChart("timelineChart", {
+        type: "bar",
+        data: {
+          labels: dated.map(v => v.date.toLocaleDateString(undefined, { month: "short", day: "numeric", year: "2-digit" })),
+          datasets: [
+            { type: "line", label: "Rolling median (5 videos)", data: roll, borderColor: DARK_TEAL, backgroundColor: DARK_TEAL, pointRadius: 0, tension: .3, borderWidth: 2 },
+            { label: metricLabel, data: dated.map(v => v[metric]), backgroundColor: dated.map(v => (v.vsMedian ?? 1) >= 2 ? TEAL : "#a6e9df"), borderRadius: 4 },
+          ],
+        },
+        options: baseOpts({ tooltipTitle: (items) => dated[items[0].dataIndex].title || "Untitled" }),
+      });
+
+      // by weekday
+      const byDay = DAYS.map((_, d) => dated.filter(v => v.date.getDay() === d).map(v => v[metric]));
+      drawChart("dayChart", {
+        type: "bar",
+        data: { labels: DAYS, datasets: [{ label: `Median ${metricLabel.toLowerCase()}`, data: byDay.map(median), backgroundColor: TEAL, borderRadius: 4 }] },
+        options: baseOpts({ countLabel: (i) => `${byDay[i].length} videos` }),
+      });
+
+      // by hour (only if timestamps carry a time)
+      const hasTime = dated.some(v => v.date.getHours() || v.date.getMinutes());
+      $("hourCard").style.display = hasTime ? "" : "none";
+      if (hasTime) {
+        const byHour = [...Array(24)].map((_, h) => dated.filter(v => v.date.getHours() === h).map(v => v[metric]));
+        drawChart("hourChart", {
+          type: "bar",
+          data: { labels: [...Array(24)].map((_, h) => `${h}:00`), datasets: [{ label: `Median ${metricLabel.toLowerCase()}`, data: byHour.map(median), backgroundColor: BLUE, borderRadius: 4 }] },
+          options: baseOpts({ countLabel: (i) => `${byHour[i].length} videos` }),
+        });
+      }
+
+      // duration scatter
+      const withDur = list.filter(v => v.duration && v[metric] != null);
+      $("durationCard").style.display = withDur.length >= 3 ? "" : "none";
+      if (withDur.length >= 3) {
+        drawChart("durationChart", {
+          type: "scatter",
+          data: { datasets: [{ label: metricLabel, data: withDur.map(v => ({ x: v.duration, y: v[metric], t: v.title })), backgroundColor: AMBER }] },
+          options: {
+            ...baseOpts({}),
+            scales: { x: { title: { display: true, text: "Length (seconds)" } }, y: { ticks: { callback: fmt }, title: { display: true, text: metricLabel } } },
+            plugins: { legend: { display: false }, tooltip: { callbacks: { label: (c) => `${c.raw.x}s · ${fmt(c.raw.y)} — ${(c.raw.t || "Untitled").slice(0, 40)}` } } },
+          },
+        });
+      }
+
+      // engagement mix
+      const mix = [["Likes", "likes", TEAL], ["Comments", "comments", BLUE], ["Shares", "shares", AMBER], ["Saves", "saves", CORAL]]
+        .map(([l, k, c]) => [l, sum(list.map(v => v[k])), c]).filter(x => x[1] > 0);
+      drawChart("mixChart", {
+        type: "doughnut",
+        data: { labels: mix.map(x => x[0]), datasets: [{ data: mix.map(x => x[1]), backgroundColor: mix.map(x => x[2]), borderWidth: 2, borderColor: "#fff" }] },
+        options: { maintainAspectRatio: false, plugins: { legend: { position: "right" }, tooltip: { callbacks: { label: (c) => `${c.label}: ${fmt(c.raw)}` } } } },
+      });
+    }
+
+    function baseOpts({ tooltipTitle, countLabel }) {
+      return {
+        maintainAspectRatio: false,
+        scales: { y: { beginAtZero: true, ticks: { callback: fmt } }, x: { ticks: { autoSkip: true, maxRotation: 0 } } },
+        plugins: {
+          legend: { display: !!tooltipTitle },
+          tooltip: { callbacks: {
+            ...(tooltipTitle ? { title: tooltipTitle } : {}),
+            label: (c) => `${c.dataset.label}: ${fmt(c.raw)}`,
+            ...(countLabel ? { afterLabel: (c) => countLabel(c.dataIndex) } : {}),
+          } },
+        },
+      };
+    }
+
+    function drawChart(id, cfg) {
+      if (typeof Chart === "undefined") return;
+      charts[id]?.destroy();
+      charts[id] = new Chart($(id), cfg);
+    }
+
+    function badge(x) {
+      if (x == null) return "";
+      const cls = x >= 1.5 ? "b-hit" : x >= 0.67 ? "b-ok" : "b-low";
+      return `<span class="badge ${cls}">${x.toFixed(1)}×</span>`;
+    }
+
+    const COLS = [
+      ["title", "Video", (v) => `<div class="caption">${v.link ? `<a href="${esc(v.link)}" target="_blank" rel="noopener">${esc(v.title || "Untitled")}</a>` : esc(v.title || "Untitled")}</div>`],
+      ["date", "Posted", (v) => v.date ? v.date.toLocaleString(undefined, { dateStyle: "medium", timeStyle: "short" }) : "–"],
+      ["views", "Views", (v) => fmt(v.views), true],
+      ["vsMedian", "Vs. typical", (v) => badge(v.vsMedian), true],
+      ["likes", "Likes", (v) => fmt(v.likes), true],
+      ["comments", "Comments", (v) => fmt(v.comments), true],
+      ["shares", "Shares", (v) => fmt(v.shares), true],
+      ["saves", "Saves", (v) => fmt(v.saves), true],
+      ["er", "Eng. rate", (v) => pct(v.er), true],
+      ["watchPct", "% watched", (v) => pct(v.watchPct, 0), true],
+      ["duration", "Length", (v) => v.duration ? `${Math.round(v.duration)}s` : "–", true],
+    ];
+
+    function renderVideos(list) {
+      const q = $("search").value.trim().toLowerCase();
+      let rows = q ? list.filter(v => v.title.toLowerCase().includes(q)) : list;
+      const cols = COLS.filter(([k]) => k === "title" || k === "date" || rows.some(v => v[k] != null));
+      rows = [...rows].sort((a, b) => {
+        const x = a[sort.key], y = b[sort.key];
+        if (x == null) return 1; if (y == null) return -1;
+        return (x > y ? 1 : x < y ? -1 : 0) * sort.dir;
+      });
+      $("videoTable").innerHTML =
+        `<thead><tr>${cols.map(([k, l, , n]) => `<th class="${n ? "num" : ""}" data-key="${k}">${l}${sort.key === k ? (sort.dir > 0 ? " ▲" : " ▼") : ""}</th>`).join("")}<th></th></tr></thead>` +
+        `<tbody>${rows.map(v => `<tr>${cols.map(([, , f, n]) => `<td class="${n ? "num" : ""}">${f(v)}</td>`).join("")}<td><button class="danger" data-del="${esc(keyOf(v))}" title="Remove">✕</button></td></tr>`).join("") ||
+          `<tr><td colspan="${cols.length + 1}" class="empty">No videos match.</td></tr>`}</tbody>`;
+
+      const tags = hashtagStats(list);
+      const metric = list.some(v => v.views != null) ? "views" : "likes";
+      $("tagTable").innerHTML = tags.length
+        ? `<thead><tr><th>Hashtag</th><th class="num">Videos</th><th class="num">Median ${metric}</th><th class="num">Vs. typical</th><th class="num">Median eng. rate</th></tr></thead><tbody>` +
+          tags.map(t => `<tr><td>${esc(t.tag)}</td><td class="num">${t.n}</td><td class="num">${fmt(t.med)}</td><td class="num">${badge(t.lift)}</td><td class="num">${pct(t.er)}</td></tr>`).join("") + "</tbody>"
+        : `<tbody><tr><td class="empty">No hashtag used on 2+ videos yet.</td></tr></tbody>`;
+    }
+
+    function hashtagStats(list) {
+      const metric = list.some(v => v.views != null) ? "views" : "likes";
+      const overall = median(list.map(v => v[metric]));
+      const map = new Map();
+      for (const v of list) for (const t of new Set(v.tags)) { if (!map.has(t)) map.set(t, []); map.get(t).push(v); }
+      return [...map].filter(([, vs]) => vs.length >= 2).map(([tag, vs]) => {
+        const med = median(vs.map(v => v[metric]));
+        return { tag, n: vs.length, med, lift: overall ? med / overall : null, er: median(vs.map(v => v.er)) };
+      }).sort((a, b) => b.med - a.med);
+    }
+
+    // ---------- insights ----------
+    function renderInsights(list) {
+      const out = [];
+      const hasViews = list.some(v => v.views != null);
+      const metric = hasViews ? "views" : "likes";
+      const dated = list.filter(v => v.date && v[metric] != null).sort((a, b) => a.date - b.date);
+      const overall = median(list.map(v => v[metric]));
+
+      if (list.length < 5) out.push(`You have ${list.length} video${list.length === 1 ? "" : "s"} loaded. Import at least 10–20 for patterns to be reliable.`);
+
+      // momentum
+      if (dated.length >= 10) {
+        const n = Math.min(10, Math.floor(dated.length / 2));
+        const recent = median(dated.slice(-n).map(v => v[metric]));
+        const prior = median(dated.slice(-2 * n, -n).map(v => v[metric]));
+        if (prior) {
+          const ch = recent / prior - 1;
+          out.push(`<strong>Momentum:</strong> your last ${n} videos have a median of ${fmt(recent)} ${metric}, ${ch >= 0 ? "up" : "down"} <strong>${pct(Math.abs(ch), 0)}</strong> from the ${n} before (${fmt(prior)}).${ch < -0.25 ? " Look at what changed in format, topic or posting time." : ch > 0.25 ? " Whatever you changed recently is working — keep going." : ""}`);
+        }
+      }
+
+      // hits
+      const hits = list.filter(v => (v.vsMedian ?? 0) >= 3);
+      if (hasViews && hits.length) {
+        const top = [...hits].sort((a, b) => b.views - a.views).slice(0, 3).map(v => `“${esc((v.title || "Untitled").slice(0, 60))}” (${fmt(v.views)})`).join(", ");
+        out.push(`<strong>Breakouts:</strong> ${hits.length} video${hits.length > 1 ? "s" : ""} got 3× or more your typical views: ${top}. Consider follow-ups, part 2s or remakes of these.`);
+      }
+
+      // best day
+      const byDay = DAYS.map((d, i) => ({ d, vs: dated.filter(v => v.date.getDay() === i).map(v => v[metric]) })).filter(x => x.vs.length >= 2);
+      if (byDay.length >= 3) {
+        byDay.forEach(x => x.med = median(x.vs));
+        byDay.sort((a, b) => b.med - a.med);
+        const b = byDay[0], w = byDay.at(-1);
+        out.push(`<strong>Best day:</strong> videos posted on <strong>${b.d}</strong> have a median of ${fmt(b.med)} ${metric} (${b.vs.length} videos), vs ${fmt(w.med)} on ${w.d}.`);
+      }
+
+      // best hour window
+      const hasTime = dated.some(v => v.date.getHours() || v.date.getMinutes());
+      if (hasTime) {
+        const blocks = [[6, 9, "early morning (6–9)"], [9, 12, "late morning (9–12)"], [12, 15, "early afternoon (12–15)"], [15, 18, "late afternoon (15–18)"], [18, 21, "evening (18–21)"], [21, 24, "late evening (21–24)"], [0, 6, "night (0–6)"]]
+          .map(([a, b, l]) => ({ l, vs: dated.filter(v => v.date.getHours() >= a && v.date.getHours() < b).map(v => v[metric]) }))
+          .filter(x => x.vs.length >= 2);
+        if (blocks.length >= 2) {
+          blocks.forEach(x => x.med = median(x.vs));
+          blocks.sort((a, b) => b.med - a.med);
+          out.push(`<strong>Best time:</strong> posts in the <strong>${blocks[0].l}</strong> perform best (median ${fmt(blocks[0].med)} ${metric}, ${blocks[0].vs.length} videos). Times are in your browser's time zone.`);
+        }
+      }
+
+      // duration buckets
+      const durBuckets = [[0, 15, "under 15s"], [15, 30, "15–30s"], [30, 60, "30–60s"], [60, 180, "1–3 min"], [180, 1e9, "over 3 min"]]
+        .map(([a, b, l]) => ({ l, vs: list.filter(v => v.duration >= a && v.duration < b && v[metric] != null) }))
+        .filter(x => x.vs.length >= 2);
+      if (durBuckets.length >= 2) {
+        durBuckets.forEach(x => { x.med = median(x.vs.map(v => v[metric])); x.watch = median(x.vs.map(v => v.watchPct)); });
+        durBuckets.sort((a, b) => b.med - a.med);
+        const b = durBuckets[0];
+        out.push(`<strong>Length sweet spot:</strong> ${b.l} videos do best (median ${fmt(b.med)} ${metric}${b.watch != null ? `, ${pct(b.watch, 0)} watched on average` : ""}).`);
+      }
+
+      // retention
+      const ret = list.filter(v => v.watchPct != null);
+      if (ret.length >= 5 && hasViews) {
+        const sorted = [...ret].sort((a, b) => b.watchPct - a.watchPct);
+        const half = Math.floor(sorted.length / 2);
+        const hi = median(sorted.slice(0, half).map(v => v.views)), lo = median(sorted.slice(-half).map(v => v.views));
+        if (hi && lo) out.push(`<strong>Retention matters:</strong> your better-retained half of videos get a median of ${fmt(hi)} views vs ${fmt(lo)} for the rest. Tighten the first 2 seconds and cut slow sections.`);
+      }
+
+      // engagement composition
+      if (hasViews) {
+        const shareRate = median(list.map(v => v.views ? (v.shares || 0) / v.views : null));
+        const saveRate = median(list.map(v => v.views ? (v.saves || 0) / v.views : null));
+        const commentRate = median(list.map(v => v.views ? (v.comments || 0) / v.views : null));
+        const er = median(list.map(v => v.er));
+        if (er != null) out.push(`<strong>Engagement:</strong> median engagement rate is <strong>${pct(er)}</strong> (shares ${pct(shareRate, 2)}, saves ${pct(saveRate, 2)}, comments ${pct(commentRate, 2)} of views). Shares and saves are strong distribution signals — calls to action like “save this for later” or “send to a friend who…” can lift them.`);
+        const topEr = list.filter(v => v.views >= overall && v.er != null).sort((a, b) => b.er - a.er)[0];
+        if (topEr) out.push(`<strong>Most engaging (above-median reach):</strong> “${esc((topEr.title || "Untitled").slice(0, 60))}” with ${pct(topEr.er)} engagement on ${fmt(topEr.views)} views.`);
+      }
+
+      // hashtags
+      const tags = hashtagStats(list);
+      if (tags.length >= 2) {
+        const good = tags.filter(t => (t.lift ?? 0) >= 1.2).slice(0, 3);
+        const bad = tags.filter(t => (t.lift ?? 1) <= 0.8).slice(-3);
+        if (good.length) out.push(`<strong>Hashtags that over-perform:</strong> ${good.map(t => `${esc(t.tag)} (${t.lift.toFixed(1)}×, ${t.n} videos)`).join(", ")}.`);
+        if (bad.length) out.push(`<strong>Hashtags that under-perform:</strong> ${bad.map(t => `${esc(t.tag)} (${t.lift.toFixed(1)}×)`).join(", ")}. Topic matters more than tags, but these may be worth dropping.`);
+      }
+
+      // consistency
+      if (dated.length >= 4) {
+        const gaps = dated.slice(1).map((v, i) => (v.date - dated[i].date) / 864e5);
+        const longest = Math.max(...gaps);
+        out.push(`<strong>Consistency:</strong> you post every ${median(gaps).toFixed(1)} days on average; your longest break was ${Math.round(longest)} days.`);
+      }
+
+      if (!hasViews && list.length) out.push(`This data has no view counts (TikTok's account data export only includes likes). Import the TikTok Studio analytics export for reach and engagement-rate insights.`);
+      $("insightList").innerHTML = out.map(x => `<li>${x}</li>`).join("") || `<li>Not enough data yet.</li>`;
+    }
+
+    function renderEmpty() {
+      const msg = `<div class="card empty">No videos loaded yet. <a href="#" onclick="document.querySelector('[data-tab=import]').click();return false;">Import your data</a> to get started.</div>`;
+      $("kpis").innerHTML = "";
+      Object.values(charts).forEach(c => c.destroy());
+      for (const k in charts) delete charts[k];
+      $("videoTable").innerHTML = `<tbody><tr><td>${msg}</td></tr></tbody>`;
+      $("tagTable").innerHTML = "";
+      $("insightList").innerHTML = `<li>${msg}</li>`;
+    }
+
+    function render() {
+      if (!videos.length) return renderEmpty();
+      const list = filtered();
+      renderOverview(list);
+      renderVideos(list);
+      renderInsights(list);
+    }
+
+    function afterChange(goToOverview) {
+      save();
+      render();
+      if (goToOverview) showTab("overview");
+    }
+
+    function showTab(id) {
+      document.querySelectorAll(".tab-content").forEach(el => el.classList.toggle("active", el.id === id));
+      document.querySelectorAll("nav a").forEach(a => a.classList.toggle("active", a.dataset.tab === id));
+      render(); // charts need visible canvases to size correctly
+    }
+
+    // ---------- sample data ----------
+    function sampleData() {
+      const topics = [
+        ["3 ingredient pasta in 10 minutes #recipe #pasta #fyp", 28], ["What I eat in a day as a nurse #wieiad #fyp", 55],
+        ["Pantry restock ASMR #asmr #restock", 40], ["Meal prep for the week under $30 #mealprep #budget #recipe", 75],
+        ["Rating viral TikTok recipes #recipe #viral", 48], ["Morning routine 5am #routine #fyp", 33],
+        ["Grocery haul + prices #budget #grocery", 62], ["Air fryer hack you need #airfryer #recipe #hack", 18],
+        ["Storytime: worst dinner date #storytime", 95], ["Kitchen organisation tips #organization #hack", 26],
+      ];
+      const out = []; let seed = 7;
+      const rnd = () => (seed = (seed * 16807) % 2147483647) / 2147483647;
+      const start = Date.now() - 120 * 864e5;
+      for (let i = 0; i < 48; i++) {
+        const [title, dur] = topics[Math.floor(rnd() * topics.length)];
+        const d = new Date(start + i * 2.5 * 864e5);
+        d.setHours([7, 12, 17, 18, 19, 20, 21][Math.floor(rnd() * 7)], Math.floor(rnd() * 60), 0, 0);
+        const boost = (title.includes("#budget") ? 1.8 : 1) * ([4, 5].includes(d.getDay()) ? 1.4 : 1) * (d.getHours() >= 18 ? 1.3 : 0.9) * (1 + i / 60);
+        const views = Math.round(2000 * boost * Math.exp(rnd() * 2.2 - 0.6) * (rnd() > 0.93 ? 8 : 1));
+        const watch = Math.min(0.95, 0.75 - dur / 300 + rnd() * 0.15);
+        out.push({
+          title, link: "", date: d, views,
+          likes: Math.round(views * (0.05 + rnd() * 0.06)), comments: Math.round(views * (0.002 + rnd() * 0.006)),
+          shares: Math.round(views * (0.002 + rnd() * 0.01)), saves: Math.round(views * (0.003 + rnd() * (title.includes("#recipe") ? 0.02 : 0.006))),
+          duration: dur, avgWatch: +(dur * watch).toFixed(1), completion: +(watch * 0.45).toFixed(3), reach: Math.round(views * 0.85),
+          newFollowers: Math.round(views * (0.0005 + rnd() * 0.002)),
+        });
+      }
+      return out;
+    }
+
+    function exportCSV() {
+      const list = filtered();
+      const cols = ["title", "link", "date", "views", "likes", "comments", "shares", "saves", "duration", "avgWatch", "completion", "newFollowers", "er", "watchPct", "vsMedian"];
+      const cell = (x) => { const s = x instanceof Date ? x.toISOString() : x == null ? "" : String(x); return /[",\n]/.test(s) ? `"${s.replace(/"/g, '""')}"` : s; };
+      const csv = [cols.join(","), ...list.map(v => cols.map(c => cell(v[c])).join(","))].join("\n");
+      const a = document.createElement("a");
+      a.href = URL.createObjectURL(new Blob([csv], { type: "text/csv" }));
+      a.download = "tiktok-analysis.csv";
+      a.click();
+      URL.revokeObjectURL(a.href);
+    }
+
+    // ---------- wiring ----------
+    document.querySelectorAll("nav a").forEach(a => a.addEventListener("click", () => showTab(a.dataset.tab)));
+    const drop = $("drop"), fileInput = $("fileInput");
+    drop.addEventListener("click", () => fileInput.click());
+    fileInput.addEventListener("change", () => { [...fileInput.files].forEach(importFile); fileInput.value = ""; });
+    drop.addEventListener("dragover", (e) => { e.preventDefault(); drop.classList.add("over"); });
+    drop.addEventListener("dragleave", () => drop.classList.remove("over"));
+    drop.addEventListener("drop", (e) => { e.preventDefault(); drop.classList.remove("over"); [...e.dataTransfer.files].forEach(importFile); });
+
+    $("sampleBtn").addEventListener("click", () => { videos = sampleData(); $("importStatus").textContent = "Loaded 48 sample videos."; afterChange(true); });
+    $("clearBtn").addEventListener("click", () => { if (confirm("Remove all imported videos from this browser?")) { videos = []; $("importStatus").textContent = ""; afterChange(false); } });
+    $("rangeSelect").addEventListener("change", render);
+    $("search").addEventListener("input", () => renderVideos(filtered()));
+    $("exportBtn").addEventListener("click", exportCSV);
+
+    $("videoTable").addEventListener("click", (e) => {
+      const th = e.target.closest("th[data-key]");
+      if (th) { const k = th.dataset.key; sort = { key: k, dir: sort.key === k ? -sort.dir : (k === "title" ? 1 : -1) }; renderVideos(filtered()); return; }
+      const del = e.target.closest("[data-del]");
+      if (del) { videos = videos.filter(v => keyOf(v) !== del.dataset.del); afterChange(false); }
+    });
+
+    $("manualForm").addEventListener("submit", (e) => {
+      e.preventDefault();
+      const f = Object.fromEntries(new FormData(e.target));
+      merge([{
+        title: f.title.trim(), link: "", date: new Date(f.date), views: num(f.views), likes: num(f.likes), comments: num(f.comments),
+        shares: num(f.shares), saves: num(f.saves), duration: seconds(f.duration), avgWatch: seconds(f.avgWatch),
+        completion: null, reach: null, newFollowers: null,
+      }]);
+      e.target.reset();
+      $("importStatus").textContent = "Video added.";
+      afterChange(false);
+    });
+
+    if (videos.length) showTab("overview"); else render();
+  })();
+  </script>
+</body>
+</html>
